@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
     struct addrinfo hints, *res;
 	struct sockaddr_storage client_addr;
 	socklen_t client_addr_size;
+    request_t* request;
 
     // print usage information if incorrect number command line arguments given
     if (argc != 4) {
@@ -101,7 +102,9 @@ int main(int argc, char** argv) {
 	printf("Here is the request: %s\n", buffer);
 
     //TODO: check the request is GET
-    printf("%d", strncmp(buffer, "GET", 3));
+    printf("%d\n", strncmp(buffer, "GET", 3));
+    request = process_request(buffer);
+    printf("method: %d, path: %s\n", request->method, request->path);
 
     //TODO: check request formatting (400 error if malformed)
     //TODO: check there's no ../ in path (404 error)

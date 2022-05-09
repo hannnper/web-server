@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 // consider using sendfile() for efficiency (TODO: add required 2+ line comments here!)
 // sendfile is more efficient because it copies the files in kernel, so avoids 
 // having to read the file in to user-space and the write the file out
@@ -27,6 +28,7 @@
 // request type
 #define INVALID 0
 #define GET 1
+#define GET_STR "GET"
 
 // type definitions
 
@@ -38,7 +40,7 @@ typedef struct request_t {
 // function prototypes
 // see utils.c for documentation
 int get_protocol(char*);
-
+request_t* process_request(char*);
 
 
 #endif

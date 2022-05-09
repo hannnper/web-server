@@ -6,6 +6,7 @@
 
 #include "utils.h"
 
+
 // function definitions
 
 // `get_protocol()` takes a string of "4" or "6" and returns the appropriate 
@@ -28,4 +29,19 @@ int get_protocol(char* protocol_string) {
     return protocol;
 }
 
+
+// process_request() takes a string request and returns a pointer to a request_t
+// containing the information for the request
+request_t* process_request(char* req_string) {
+    request_t* request = malloc(sizeof(request_t));
+    assert(request != NULL);
+    request->method = INVALID;
+    request->path[0] = '\0';
+    if (strncmp(req_string, GET_STR, 3) == 0) {
+        // this is a GET request
+        request->method = GET;
+        strncpy(request->path, &req_string[strlen(GET_STR) + 1], BUFFER_SIZE);
+    }
+    return request;
+}
 
