@@ -6,30 +6,32 @@
 //          multithreaded HTTP server that responds to a limited set of 
 //          GET requests
 
+// Note: server ip
+//       IPv4: 172.26.130.61
+//       IPv6: fe80::f816:3eff:fe12:e19c
 
-// consider using sendfile() for efficiency (TODO: add required 2+ line comments here!)
-// #include <sys/sendfile.h>
+
 #include "utils.h"
 
 int main(int argc, char** argv) {
     int protocol, s, re, n, sockfd, newsockfd;
     char* port;
     char* path;
-    char buffer[256];
+    char buffer[BUFFER_SIZE + 1];
     struct addrinfo hints, *res;
 	struct sockaddr_storage client_addr;
 	socklen_t client_addr_size;
 
     // print usage information if incorrect number command line arguments given
     if (argc != 4) {
-        fprintf(stderr, "Usage:\n\t./server <protocol> <port> <path>"\
-                        "\n\nprotocol: number, 4 (for IPv4) or 6 (for IPv6)\n"\
+        fprintf(stderr, "Usage:\n\t./server <protocol> <port> <path>\n\n"\
+                        "protocol: number, 4 (for IPv4) or 6 (for IPv6)\n"\
                         "port: port number\n"\
                         "path: string path to root web directory\n\n");
         exit(EXIT_FAILURE);
     }
 
-    // get protocol, port and path
+    // get protocol, port and path from command line arguments
     protocol = get_protocol(argv[1]);
     port = argv[2];
     path = argv[3];
@@ -87,7 +89,7 @@ int main(int argc, char** argv) {
 	}
 
 	// Read characters from the connection, then process
-	n = read(newsockfd, buffer, 255); // n is number of characters read
+	n = read(newsockfd, buffer, BUFFER_SIZE); // n is number of characters read
 	if (n < 0) {
 		perror("read");
 		exit(EXIT_FAILURE);
@@ -95,8 +97,32 @@ int main(int argc, char** argv) {
 	// Null-terminate string
 	buffer[n] = '\0';
 
-	// Write message back
-	printf("Here is the message: %s\n", buffer);
+	// print the request
+	printf("Here is the request: %s\n", buffer);
+
+    //TODO: check the request is GET
+    printf("%d", strncmp(buffer, "GET", 3));
+
+    //TODO: check request formatting (400 error if malformed)
+    //TODO: check there's no ../ in path (404 error)
+    //TODO: check file access allowed (file can be opened for reading) (403 error)
+    //TODO: check requested file exists (404 error)
+    //TODO: determine http status (200 if all good)
+    //TODO: format response
+    //          - status line: 
+    //              - http version (HTTP/1.0)
+    //              - status code (200/403/404/400...)
+    //              - reason phrase (OK/Forbidden/Not Found/Bad Request...)
+    //          - http headers:
+    //              - Date
+    //              - Server
+    //              - Content-type
+    //          - message body
+    //TODO: copy requested file to response (if okay)
+
+    //TODO: (if time) implement BREW request
+
+    // response
 	n = write(newsockfd, "I got your message", 18);
 	if (n < 0) {
 		perror("write");

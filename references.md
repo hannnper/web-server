@@ -10,4 +10,15 @@
 
 ### wikipedia
 - https://en.wikipedia.org/wiki/Getaddrinfo
+- https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods
+- https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+
+### Mozilla docs
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET
+
+### IBM documentation pages
+- https://www.ibm.com/docs/en/cics-ts/5.2?topic=protocol-http-responses
+
+### MIME types 
+- https://mimetype.io/all-types
 
