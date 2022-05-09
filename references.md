@@ -8,3 +8,6 @@
 ### netdb manual
 - https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/netdb.h.html
 
+### wikipedia
+- https://en.wikipedia.org/wiki/Getaddrinfo
+
