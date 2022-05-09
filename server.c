@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+// consider using sendfile() for efficiency (TODO: add required 2+ line comments here!)
+// #include <sys/sendfile.h>
 
 int main(int argc, char** argv) {
     int protocol;
@@ -21,10 +23,10 @@ int main(int argc, char** argv) {
 
     // print usage information if incorrect number command line arguments given
     if (argc != 4) {
-        fprintf(stderr, "./server usage:\n\t./server <protocol> <port> <path>"\
+        fprintf(stderr, "Usage:\n\t./server <protocol> <port> <path>"\
                         "\n\nprotocol: number, 4 (for IPv4) or 6 (for IPv6)\n"\
                         "port: port number\n"\
-                        "path: string path to root web directory\n\n ");
+                        "path: string path to root web directory\n\n");
         exit(EXIT_FAILURE);
     }
 
@@ -39,7 +41,7 @@ int main(int argc, char** argv) {
     }
     else {
         // unrecognised protocol given
-        fprintf(stderr, "Error: unrecognised protocol (%s)", argv[1]);
+        fprintf(stderr, "Error: unrecognised protocol (%s)\n", argv[1]);
         exit(EXIT_FAILURE);
     }
 
@@ -47,5 +49,5 @@ int main(int argc, char** argv) {
     port = argv[2];
     path = argv[3];
 
-    printf("%d %s %s",protocol, port, path);
+    printf("%d %s %s\n",protocol, port, path);
 }
