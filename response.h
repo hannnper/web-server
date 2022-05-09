@@ -5,5 +5,12 @@
 // Purpose: Header file for the functions and type definitions relating to the
 //          response of the server
 
+#ifndef RESPONSE_H
+#define RESPONSE_H
 
+
+
+
+
+#endif
 

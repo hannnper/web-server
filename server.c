@@ -12,6 +12,7 @@
 
 
 #include "utils.h"
+#include "response.h"
 
 int main(int argc, char** argv) {
     int protocol, s, re, n, sockfd, newsockfd;

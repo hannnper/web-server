@@ -30,17 +30,9 @@
 #define GET 1
 #define GET_STR "GET"
 
-// type definitions
-
-typedef struct request_t {
-    int method;               // request method (e.g. GET)
-    char path[BUFFER_SIZE];   // string path
-} request_t;
 
 // function prototypes
 // see utils.c for documentation
 int get_protocol(char*);
-request_t* process_request(char*);
-
 
 #endif
