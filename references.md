@@ -31,4 +31,7 @@
 ### asprintf manual
 - https://man7.org/linux/man-pages/man3/asprintf.3.html
 
+### asctime manual
+- https://pubs.opengroup.org/onlinepubs/007904975/functions/asctime.html
+
 

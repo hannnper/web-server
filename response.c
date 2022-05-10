@@ -7,6 +7,7 @@
 
 #define _GNU_SOURCE
 #include <errno.h>
+#include <time.h>
 #include "utils.h"
 #include "request.h"
 #include "response.h"
@@ -87,4 +88,24 @@ void send_status_line(int socketfd, request_t* request, char* server_path) {
     }
     // send the status line
     send(socketfd, status_line, strlen(status_line), 0);
+}
+
+
+// formats and sends the http headers
+void send_http_headers(int socketfd, char* mime_type) {
+    int ret;
+    char* headers;
+    time_t _time;
+    time(&_time);
+    struct tm *time = localtime(&_time);
+    // format headers
+    // TODO: format the date as specified by the standard for http/1.0
+    ret = asprintf(&headers, "Date: %sContent-type: %s%s%s", asctime(time),
+                   mime_type, LINE_END, LINE_END);
+    if (ret < 0) {
+        // error occurred during formatting
+        perror("format:");
+        exit(EXIT_FAILURE);
+    }
+    send(socketfd, headers, strlen(headers), 0);
 }

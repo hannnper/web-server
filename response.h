@@ -40,8 +40,10 @@
     //          - message body
 
 // function prototypes
+// see response.c for documentation
 int get_status_code(request_t*, char*);
 void send_status_line(int, request_t*, char*);
+void send_http_headers(int, char*);
 
 #endif
 

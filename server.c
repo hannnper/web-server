@@ -10,10 +10,11 @@
 //       IPv4: 172.26.130.61
 //       IPv6: fe80::f816:3eff:fe12:e19c
 
-
 #include "utils.h"
 #include "request.h"
 #include "response.h"
+
+#define IMPLEMENTS_IPV6
 
 int main(int argc, char** argv) {
     int protocol, s, n, sockfd, newsockfd, status_code;
@@ -81,56 +82,61 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	// Accept a connection - blocks until a connection is ready to be accepted
-	// Get back a new file descriptor to communicate on
-	client_addr_size = sizeof client_addr;
-	newsockfd =
-		accept(sockfd, (struct sockaddr*)&client_addr, &client_addr_size);
-	if (newsockfd < 0) {
-		perror("accept");
-		exit(EXIT_FAILURE);
+	while (true) {
+		// Accept a connection - blocks until a connection is ready to be accepted
+		// Get back a new file descriptor to communicate on
+		client_addr_size = sizeof client_addr;
+		newsockfd =
+			accept(sockfd, (struct sockaddr*)&client_addr, &client_addr_size);
+		if (newsockfd < 0) {
+			perror("accept");
+			exit(EXIT_FAILURE);
+		}
+
+		// Read characters from the connection, then process
+		n = read(newsockfd, buffer, BUFFER_SIZE); // n is number of characters read
+		if (n < 0) {
+			perror("read");
+			exit(EXIT_FAILURE);
+		}
+		// Null-terminate string
+		buffer[n] = '\0';
+
+		// print the request
+		printf("Here is the request: %s\n", buffer);
+
+		//TODO: check the request is GET
+		printf("%d\n", strncmp(buffer, "GET", 3));
+		request = process_request(buffer);
+		printf("method: %d, path: %s\n", request->method, request->path);
+
+		//TODO: check request formatting (400 error if malformed)
+		//TODO: check there's no ../ in path (404 error)
+		//TODO: check file access allowed (file can be opened for reading) (403 error)
+		//TODO: check requested file exists (404 error)
+		//TODO: determine http status (200 if all good)
+		status_code = get_status_code(request, server_path);
+		printf("status code: %d\n", status_code);
+		send_status_line(newsockfd, request, server_path);
+		if (status_code == OK) {
+			send_http_headers(newsockfd, "put mimetype here");
+		}
+		//TODO: format response
+		//          - status line: 
+		//              - http version (HTTP/1.0)
+		//              - status code (200/403/404/400...)
+		//              - reason phrase (OK/Forbidden/Not Found/Bad Request...)
+		//          - http headers:
+		//              - Date
+		//              - Server
+		//              - Content-type
+		//          - message body
+		//TODO: copy requested file to response (if okay)
+
+		//TODO: (if time) implement BREW request
+
+		close(sockfd);
 	}
-
-	// Read characters from the connection, then process
-	n = read(newsockfd, buffer, BUFFER_SIZE); // n is number of characters read
-	if (n < 0) {
-		perror("read");
-		exit(EXIT_FAILURE);
-	}
-	// Null-terminate string
-	buffer[n] = '\0';
-
-	// print the request
-	printf("Here is the request: %s\n", buffer);
-
-    //TODO: check the request is GET
-    printf("%d\n", strncmp(buffer, "GET", 3));
-    request = process_request(buffer);
-    printf("method: %d, path: %s\n", request->method, request->path);
-
-    //TODO: check request formatting (400 error if malformed)
-    //TODO: check there's no ../ in path (404 error)
-    //TODO: check file access allowed (file can be opened for reading) (403 error)
-    //TODO: check requested file exists (404 error)
-    //TODO: determine http status (200 if all good)
-	status_code = get_status_code(request, server_path);
-	printf("status code: %d\n", status_code);
-	send_status_line(newsockfd, request, server_path);
-    //TODO: format response
-    //          - status line: 
-    //              - http version (HTTP/1.0)
-    //              - status code (200/403/404/400...)
-    //              - reason phrase (OK/Forbidden/Not Found/Bad Request...)
-    //          - http headers:
-    //              - Date
-    //              - Server
-    //              - Content-type
-    //          - message body
-    //TODO: copy requested file to response (if okay)
-
-    //TODO: (if time) implement BREW request
-
-	close(sockfd);
 	close(newsockfd);
 	return 0;
 }
