@@ -32,7 +32,7 @@
     //          - message body
 
 // function prototypes
-int get_status_code(request_t*);
+int get_status_code(request_t*, char*);
 
 #endif
 

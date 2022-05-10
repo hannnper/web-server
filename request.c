@@ -11,6 +11,7 @@
 // constants
 
 #define SEPS " "  // field separator in request header
+#define LINE_END "\r\n" // chars that end the request header line (CRLF)
 
 // function definitions
 
@@ -21,10 +22,12 @@ request_t* process_request(char* req_string) {
     assert(request != NULL);
     request->method = INVALID;
     request->path[0] = '\0';
-
     // split the request string header into parts
     char req_copy[BUFFER_SIZE + 1];
+    // take only request header line
+    char* rest = NULL;
     strncpy(req_copy, req_string, BUFFER_SIZE);
+    strcpy(req_copy, strtok_r(req_copy, LINE_END, &rest));
     char* next_tok = NULL;
     char* req_type = strtok_r(req_copy, SEPS, &next_tok);
     char* path = strtok_r(next_tok, SEPS, &next_tok);
@@ -38,6 +41,9 @@ request_t* process_request(char* req_string) {
     if (strcmp(req_type, GET_STR) == 0) {
         // this is a GET request
         request->method = GET;
+    }
+    else if (strcmp(req_type, BREW_STR) == 0) {
+        request->method = BREW;
     }
     return request;
 }

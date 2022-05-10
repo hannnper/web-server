@@ -22,3 +22,11 @@
 ### MIME types 
 - https://mimetype.io/all-types
 
+### stat manual
+- https://man7.org/linux/man-pages/man2/stat.2.html
+
+
+
+
+
+

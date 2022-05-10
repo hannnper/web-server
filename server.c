@@ -16,7 +16,7 @@
 #include "response.h"
 
 int main(int argc, char** argv) {
-    int protocol, s, re, n, sockfd, newsockfd;
+    int protocol, s, re, n, sockfd, newsockfd, status_code;
     char* port;
     char* path;
     char buffer[BUFFER_SIZE + 1];
@@ -113,6 +113,8 @@ int main(int argc, char** argv) {
     //TODO: check file access allowed (file can be opened for reading) (403 error)
     //TODO: check requested file exists (404 error)
     //TODO: determine http status (200 if all good)
+	status_code = get_status_code(request, path);
+	printf("status code: %d\n", status_code);
     //TODO: format response
     //          - status line: 
     //              - http version (HTTP/1.0)

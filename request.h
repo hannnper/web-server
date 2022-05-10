@@ -12,7 +12,10 @@
 // request method types
 #define INVALID 0
 #define GET 1
+#define BREW 2
 #define GET_STR "GET"
+#define BREW_STR "BREW"
+
 
 // type definitions
 
