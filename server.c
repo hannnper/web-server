@@ -12,6 +12,7 @@
 
 
 #include "utils.h"
+#include "request.h"
 #include "response.h"
 
 int main(int argc, char** argv) {

@@ -8,6 +8,11 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
+// constants
+// request method types
+#define INVALID 0
+#define GET 1
+#define GET_STR "GET"
 
 // type definitions
 
@@ -20,6 +25,5 @@ typedef struct request_t {
 // function prototypes
 // see request.c for documentation
 request_t* process_request(char*);
-
 
 #endif

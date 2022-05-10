@@ -29,4 +29,3 @@ int get_protocol(char* protocol_string) {
     return protocol;
 }
 
-

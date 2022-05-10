@@ -12,6 +12,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
@@ -19,16 +20,12 @@
 // sendfile is more efficient because it copies the files in kernel, so avoids 
 // having to read the file in to user-space and the write the file out
 #include <sys/sendfile.h>
+#include <sys/stat.h>
 
 // constants
 
 // can assume that GET requests will be no larger than 2kB in size
 #define BUFFER_SIZE 2048
-
-// request type
-#define INVALID 0
-#define GET 1
-#define GET_STR "GET"
 
 
 // function prototypes
