@@ -25,8 +25,10 @@
 ### stat manual
 - https://man7.org/linux/man-pages/man2/stat.2.html
 
+### send manual
+- https://man7.org/linux/man-pages/man2/send.2.html
 
-
-
+### asprintf manual
+- https://man7.org/linux/man-pages/man3/asprintf.3.html
 
 

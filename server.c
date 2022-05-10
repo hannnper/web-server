@@ -16,9 +16,9 @@
 #include "response.h"
 
 int main(int argc, char** argv) {
-    int protocol, s, re, n, sockfd, newsockfd, status_code;
+    int protocol, s, n, sockfd, newsockfd, status_code;
     char* port;
-    char* path;
+    char* server_path;
     char buffer[BUFFER_SIZE + 1];
     struct addrinfo hints, *res;
 	struct sockaddr_storage client_addr;
@@ -30,16 +30,16 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Usage:\n\t./server <protocol> <port> <path>\n\n"\
                         "protocol: number, 4 (for IPv4) or 6 (for IPv6)\n"\
                         "port: port number\n"\
-                        "path: string path to root web directory\n\n");
+                        "server path: string path to root web directory\n\n");
         exit(EXIT_FAILURE);
     }
 
     // get protocol, port and path from command line arguments
     protocol = get_protocol(argv[1]);
     port = argv[2];
-    path = argv[3];
+    server_path = argv[3];
 
-    printf("%d %s %s\n",protocol, port, path);
+    printf("%d %s %s\n",protocol, port, server_path);
 
     // code source: server.c from week 9 (sockets) prac comp30023 (modified)
     // create address for listening (with given port number)
@@ -61,9 +61,9 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	// Reuse port if possible
-	re = 1;
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &re, sizeof(int)) < 0) {
+	// reuse port (code from project specifications)
+	int enable = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
 		perror("setsockopt");
 		exit(EXIT_FAILURE);
 	}
@@ -113,8 +113,9 @@ int main(int argc, char** argv) {
     //TODO: check file access allowed (file can be opened for reading) (403 error)
     //TODO: check requested file exists (404 error)
     //TODO: determine http status (200 if all good)
-	status_code = get_status_code(request, path);
+	status_code = get_status_code(request, server_path);
 	printf("status code: %d\n", status_code);
+	send_status_line(newsockfd, request, server_path);
     //TODO: format response
     //          - status line: 
     //              - http version (HTTP/1.0)
@@ -128,13 +129,6 @@ int main(int argc, char** argv) {
     //TODO: copy requested file to response (if okay)
 
     //TODO: (if time) implement BREW request
-
-    // response
-	n = write(newsockfd, "I got your message", 18);
-	if (n < 0) {
-		perror("write");
-		exit(EXIT_FAILURE);
-	}
 
 	close(sockfd);
 	close(newsockfd);

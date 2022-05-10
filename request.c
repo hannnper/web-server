@@ -8,10 +8,8 @@
 #include "utils.h"
 #include "request.h"
 
-// constants
-
 #define SEPS " "  // field separator in request header
-#define LINE_END "\r\n" // chars that end the request header line (CRLF)
+
 
 // function definitions
 

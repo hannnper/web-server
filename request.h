@@ -15,7 +15,8 @@
 #define BREW 2
 #define GET_STR "GET"
 #define BREW_STR "BREW"
-
+// chars that end the request header line (CRLF)
+#define LINE_END "\r\n"
 
 // type definitions
 

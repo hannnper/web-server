@@ -5,8 +5,10 @@
 // Purpose: Contains the functions and type definitions relating to the
 //          response of the server
 
-
+#define _GNU_SOURCE
 #include <errno.h>
+#include "utils.h"
+#include "request.h"
 #include "response.h"
 
 
@@ -19,7 +21,7 @@
 // NOT_FOUND 404
 // TEAPOT 418
 int get_status_code(request_t* request, char* server_path) {
-    int ret;
+    int ret, total_len;
     char* full_path;
     struct stat buf;
     // check if method is invalid
@@ -37,9 +39,13 @@ int get_status_code(request_t* request, char* server_path) {
     // check file exists and permissions
     // this part may not be threadsafe!!! 
     // TODO: make threadsafe
-    full_path = strcat(server_path, request->path);
+    total_len = strlen(server_path) + strlen(request->path);
+    full_path = malloc(sizeof(char) * total_len);
+    strcpy(full_path, server_path);
+    full_path = strcat(full_path, request->path);
     printf("full path: %s\n", full_path);
     ret = stat(full_path, &buf);
+    free(full_path);
     if (ret != 0) {
         if (errno == EACCES) {
             // permission denied
@@ -52,4 +58,33 @@ int get_status_code(request_t* request, char* server_path) {
 }
 
 
-
+// formats and sends the status line of the response to the given socketfd
+void send_status_line(int socketfd, request_t* request, char* server_path) {
+    char* status_line;
+    char* reason;
+    int status_code = get_status_code(request, server_path);
+    int ret;
+    // get reason
+    if (status_code == OK) {
+        reason = OK_STR;
+    }
+    else if (status_code == NOT_FOUND) {
+        reason = NOT_FOUND_STR;
+    }
+    else if (status_code == FORBIDDEN) {
+        reason = FORBIDDEN_STR;
+    }
+    else if (status_code == TEAPOT) {
+        reason = TEAPOT_STR;
+    }
+    // format the status line
+    ret = asprintf(&status_line, "%s %3.3d %s%s", HTTP_VER, status_code,
+             reason, LINE_END);
+    if (ret < 0) {
+        // error occurred during formatting
+        perror("format:");
+        exit(EXIT_FAILURE);
+    }
+    // send the status line
+    send(socketfd, status_line, strlen(status_line), 0);
+}

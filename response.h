@@ -12,12 +12,20 @@
 #include "request.h"
 
 // constants
+// http version
+#define HTTP_VER "HTTP/1.0"
 // status codes
 #define OK 200
 #define BAD_REQUEST 400
 #define FORBIDDEN 403
 #define NOT_FOUND 404
 #define TEAPOT 418
+// status reason strings
+#define OK_STR "OK"
+#define BAD_REQUEST_STR "Bad Request"
+#define FORBIDDEN_STR "Forbidden"
+#define NOT_FOUND_STR "Not Found"
+#define TEAPOT_STR "I'm a teapot"
 
 
     //format response
@@ -33,6 +41,7 @@
 
 // function prototypes
 int get_status_code(request_t*, char*);
+void send_status_line(int, request_t*, char*);
 
 #endif
 
