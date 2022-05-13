@@ -2,11 +2,10 @@
 
 ### comp30023 practical code from week 9 (Sockets)
 
+### comp30023 practical code from week 10 (multiplexing)
+
 ### Beej's Guide to Network Programming
 - http://www.cs.columbia.edu/~danr/courses/6761/Fall00/hw/pa1/6761-sockhelp.pdf
-
-### netdb manual
-- https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/netdb.h.html
 
 ### wikipedia
 - https://en.wikipedia.org/wiki/Getaddrinfo
@@ -22,16 +21,12 @@
 ### MIME types 
 - https://mimetype.io/all-types
 
-### stat manual
+### manuals
 - https://man7.org/linux/man-pages/man2/stat.2.html
-
-### send manual
 - https://man7.org/linux/man-pages/man2/send.2.html
-
-### asprintf manual
 - https://man7.org/linux/man-pages/man3/asprintf.3.html
-
-### asctime manual
+- https://man7.org/linux/man-pages/man7/epoll.7.html
 - https://pubs.opengroup.org/onlinepubs/007904975/functions/asctime.html
+- https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/netdb.h.html
 
 

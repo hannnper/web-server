@@ -2,9 +2,8 @@
 // Author:  Hannah Jean Perry <hperry1@student.unimelb.edu.au>
 // Subject: COMP30023 Computer Systems
 // Project: Serving the Web (project 2)
-// Purpose: Contains the main program of server, which is a basic
-//          multithreaded HTTP server that responds to a limited set of 
-//          GET requests
+// Purpose: Contains the main program of server, which is a basic multiplexed
+//          HTTP server that responds to a limited set of requests
 
 // Note: server ip
 //       IPv4: 172.26.130.61
@@ -17,13 +16,10 @@
 #define IMPLEMENTS_IPV6
 
 int main(int argc, char** argv) {
-    int protocol, s, n, sockfd, newsockfd, status_code;
+    int protocol, s, n, sockfd, status_code;
     char* port;
     char* server_path;
-    char buffer[BUFFER_SIZE + 1];
     struct addrinfo hints, *res;
-	struct sockaddr_storage client_addr;
-	socklen_t client_addr_size;
     request_t* request;
 
     // print usage information if incorrect number command line arguments given
@@ -35,7 +31,7 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    // get protocol, port and path from command line arguments
+    // get protocol, port and server path from command line arguments
     protocol = get_protocol(argv[1]);
     port = argv[2];
     server_path = argv[3];
@@ -82,18 +78,21 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	while (true) {
-		// Accept a connection - blocks until a connection is ready to be accepted
-		// Get back a new file descriptor to communicate on
-		client_addr_size = sizeof client_addr;
-		newsockfd =
-			accept(sockfd, (struct sockaddr*)&client_addr, &client_addr_size);
-		if (newsockfd < 0) {
-			perror("accept");
-			exit(EXIT_FAILURE);
-		}
+	// create file descriptor for the epoll instance
+	int epollfd = epoll_create1(0);
+	int event_count = 0;
+	struct epoll_event event;
+	struct epoll_event events[MAX_EVENTS];
 
+	while (true) {
+		// wait for epoll
+		epoll_wait(epollfd, )
+
+		// accept connection
+		int newsockfd = accept_connection(sockfd, epollfd);
+		
 		// Read characters from the connection, then process
+		char buffer[BUFFER_SIZE + 1];
 		n = read(newsockfd, buffer, BUFFER_SIZE); // n is number of characters read
 		if (n < 0) {
 			perror("read");
@@ -135,8 +134,10 @@ int main(int argc, char** argv) {
 
 		//TODO: (if time) implement BREW request
 
-		close(sockfd);
+		
 	}
 	close(newsockfd);
+	close(epollfd);
+	close(sockfd);
 	return 0;
 }

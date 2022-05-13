@@ -29,3 +29,29 @@ int get_protocol(char* protocol_string) {
     return protocol;
 }
 
+
+// accept_connection() accepts a new connection and adds it to the epoll, 
+// returns the new socket file descriptor or FAIL (-1) if an error occurred
+int accept_connection(int sockfd, int epollfd) {
+    int newsockfd;
+    struct sockaddr_storage client_addr;
+    socklen_t client_addr_size = sizeof(client_addr);
+    struct epoll_event event;
+
+    // accept the connection
+    newsockfd = accept(sockfd, &client_addr, &client_addr_size);
+    if (newsockfd < 0) {
+        // error occurred in attempt to accept
+        perror("accept");
+        return FAIL;
+    }
+
+    // add this new file descriptor to the epoll
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, newsockfd, &event) < 0) {
+        // error occurred
+        perror("epoll_ctl");
+        return FAIL;
+    }
+    return newsockfd;
+}
+

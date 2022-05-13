@@ -21,15 +21,20 @@
 // having to read the file in to user-space and the write the file out
 #include <sys/sendfile.h>
 #include <sys/stat.h>
+#include <sys/epoll.h>
 
 // constants
+#define FAIL -1
 
 // can assume that GET requests will be no larger than 2kB in size
 #define BUFFER_SIZE 2048
 
+// set maximum number of epoll events
+#define MAX_EVENTS 10
 
 // function prototypes
 // see utils.c for documentation
 int get_protocol(char*);
+int accept_connection(int, int);
 
 #endif
