@@ -169,7 +169,12 @@ int main(int argc, char** argv) {
 					send_contents(events[i].data.fd, file_path);
 					
 				}
+				// clean up
 				free(file_path);
+				// close connection after sending response
+				epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+				printf("disconnect socket (after sending response): %d", 
+						events[i].data.fd);
 			}
 		}
 
