@@ -41,6 +41,18 @@ int main(int argc, char** argv) {
 
     printf("%d %s %s\n",protocol, port, server_path);
 
+	// check server_path exists
+	struct stat stat_buf;
+	if (stat(server_path, &stat_buf) < 0) {
+		perror("server path stats");
+		exit(EXIT_FAILURE);
+	}
+	else if (S_ISDIR(stat_buf.st_mode) == 0) {
+		// server path is not a directory
+		printf("server path (root directory) is not a directory\n");
+		exit(EXIT_FAILURE);
+	}
+
     // code source: server.c from week 9 (sockets) prac comp30023 (modified)
     // create address for listening (with given port number)
     memset(&hints, 0, sizeof(hints));

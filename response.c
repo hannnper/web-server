@@ -141,7 +141,7 @@ void send_datetime(int socketfd) {
     struct tm *time = gmtime(&_time);
 
     // format the Date header
-    if (strftime(header, HEADER_MAX, "Date: %a, %d %b %Y %H:%M:%S %Z", time) < 0) {
+    if (strftime(header, HEADER_MAX, "Date: %a, %d %b %Y %H:%M:%S %Z\r\n", time) < 0) {
         // error occurred during formatting
         perror("format datetime");
         return;
