@@ -16,7 +16,7 @@
 #define IMPLEMENTS_IPV6
 
 int main(int argc, char** argv) {
-    int protocol, s, n, sockfd, status_code;
+    int protocol, s, n, sockfd, status_code, i;
     char* port;
     char* server_path;
     struct addrinfo hints, *res;
@@ -81,45 +81,55 @@ int main(int argc, char** argv) {
 	// create file descriptor for the epoll instance
 	int epollfd = epoll_create1(0);
 	int event_count = 0;
-	struct epoll_event event;
+	// struct epoll_event: events (bit set), data (epoll_data_t: has fd)
 	struct epoll_event events[MAX_EVENTS];
 
 	while (true) {
-		// wait for epoll
-		epoll_wait(epollfd, )
+		// wait for epoll (-1 for no timeout)
+		event_count = epoll_wait(epollfd, events, MAX_EVENTS, -1);
 
-		// accept connection
-		int newsockfd = accept_connection(sockfd, epollfd);
-		
-		// Read characters from the connection, then process
-		char buffer[BUFFER_SIZE + 1];
-		n = read(newsockfd, buffer, BUFFER_SIZE); // n is number of characters read
-		if (n < 0) {
-			perror("read");
-			exit(EXIT_FAILURE);
+		// iterate over ready events
+		for (i = 0; i < event_count; i++) {
+			if ((events[i].events & EPOLLIN) && (events[i].data.fd == sockfd)) {
+				// accept connection
+				accept_connection(sockfd, epollfd);
+			}
+			else if (events[i].events & EPOLLIN) {
+				// there is something to read from the socket (and it is not
+				// the listener socket)
+				char buffer[BUFFER_SIZE + 1];
+				n = read(events[i].data.fd, buffer, BUFFER_SIZE);
+				if (n < 0) {
+					perror("read");
+					exit(EXIT_FAILURE);
+				}
+				// Null-terminate string
+				buffer[n] = '\0';
+
+				// print the request
+				printf("Here is the request: %s\n", buffer);
+
+				// process the request
+				request = process_request(buffer);
+				printf("method: %d, path: %s\n", request->method, request->path);
+
+				// get the status code for the response to the request
+				status_code = get_status_code(request, server_path);
+				printf("status code: %d\n", status_code);
+				send_status_line(events[i].data.fd, request, server_path);
+				if (status_code == OK) {
+					// send headers and content if OK status code
+					send_http_headers(events[i].data.fd, "put mimetype here");
+				}
+			}
 		}
-		// Null-terminate string
-		buffer[n] = '\0';
-
-		// print the request
-		printf("Here is the request: %s\n", buffer);
-
-		//TODO: check the request is GET
-		printf("%d\n", strncmp(buffer, "GET", 3));
-		request = process_request(buffer);
-		printf("method: %d, path: %s\n", request->method, request->path);
 
 		//TODO: check request formatting (400 error if malformed)
 		//TODO: check there's no ../ in path (404 error)
 		//TODO: check file access allowed (file can be opened for reading) (403 error)
 		//TODO: check requested file exists (404 error)
 		//TODO: determine http status (200 if all good)
-		status_code = get_status_code(request, server_path);
-		printf("status code: %d\n", status_code);
-		send_status_line(newsockfd, request, server_path);
-		if (status_code == OK) {
-			send_http_headers(newsockfd, "put mimetype here");
-		}
+
 		//TODO: format response
 		//          - status line: 
 		//              - http version (HTTP/1.0)
@@ -136,7 +146,6 @@ int main(int argc, char** argv) {
 
 		
 	}
-	close(newsockfd);
 	close(epollfd);
 	close(sockfd);
 	return 0;

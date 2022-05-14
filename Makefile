@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -g -O3
-LDFLAGS=-lpthread
+LDFLAGS=
 EXE_SERVER=server
 OBJ_SERVER=utils.o request.o response.o
 
