@@ -189,11 +189,21 @@ void send_contents(int socketfd, char *path) {
         return;
     }
 
+    // using sendfile because it is more efficient as it copies the files
+    // within the kernel space, so it avoids having to read the file in to 
+    // user-space and then write the file back out with multiple system calls
+    // and multiple lines of code
     ssize_t bytes_sent;
     bytes_sent = sendfile(socketfd, filed, NULL, buf.st_size);
     if (bytes_sent < 0) {
         // something went wrong when attempting to send the file contents
         perror("sendfile");
+        return;
+    }
+
+    // send final CRLF
+    if (write(socketfd, CRLF, strlen(CRLF)) < 0) {
+        perror("write CRLF");
         return;
     }
 }

@@ -172,35 +172,16 @@ int main(int argc, char** argv) {
 				// clean up
 				free(file_path);
 				// close connection after sending response
-				close(events[i].data.fd);
 				epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-				printf("disconnect socket (after sending response): %d", 
+				close(events[i].data.fd);
+				printf("disconnect socket (after sending response): %d\n", 
 						events[i].data.fd);
 			}
 		}
 
-		//TODO: check request formatting (400 error if malformed)
-		//TODO: check there's no ../ in path (404 error)
-		//TODO: check file access allowed (file can be opened for reading) (403 error)
-		//TODO: check requested file exists (404 error)
-		//TODO: determine http status (200 if all good)
-
-		//TODO: format response
-		//          - status line: 
-		//              - http version (HTTP/1.0)
-		//              - status code (200/403/404/400...)
-		//              - reason phrase (OK/Forbidden/Not Found/Bad Request...)
-		//          - http headers:
-		//              - Date
-		//              - Server
-		//              - Content-type
-		//          - message body
-		//TODO: copy requested file to response (if okay)
-
-		//TODO: (if time) implement BREW request
-
-		//TODO: fix the seg fault that occurs when empty request received
+		//TODO: fix how the server deals with partial requests
 		//TODO: properly implement IPv6
+		//TODO: check valgrind
 	}
 
 	// it won't actually get to this part

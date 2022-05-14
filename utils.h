@@ -16,9 +16,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
-// consider using sendfile() for efficiency (TODO: add required 2+ line comments here!)
-// sendfile is more efficient because it copies the files in kernel, so avoids 
-// having to read the file in to user-space and the write the file out
+// using sendfile because it is more efficient as it copies the files within 
+// the kernel space, so it avoids having to read the file in to user-space and 
+// then write the file back out with multiple system calls and multiple lines
+// of code
 #include <sys/sendfile.h>
 #include <sys/stat.h>
 #include <sys/epoll.h>
