@@ -136,10 +136,10 @@ int main(int argc, char** argv) {
 				// get the status code for the response to the request
 				status_code = get_status_code(request, file_path);
 				printf("status code: %d\n", status_code);
-				send_status_line(events[i].data.fd, request, server_path);
+				send_status_line(events[i].data.fd, request, file_path);
 				if (status_code == OK) {
 					// send headers and content if OK status code
-					send_http_headers(events[i].data.fd, "put mimetype here");
+					send_http_headers(events[i].data.fd, request);
 					// send the requested file contents
 					send_contents(events[i].data.fd, file_path);
 					
@@ -168,7 +168,8 @@ int main(int argc, char** argv) {
 
 		//TODO: (if time) implement BREW request
 
-		
+		//TODO: fix the seg fault that occurs when empty request received
+		//TODO: properly implement IPv6
 	}
 
 	// it won't actually get to this part

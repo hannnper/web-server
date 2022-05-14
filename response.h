@@ -12,6 +12,8 @@
 #include "request.h"
 
 // constants
+// maximum length of header field
+#define HEADER_MAX 256
 // http version
 #define HTTP_VER "HTTP/1.0"
 // status codes
@@ -41,9 +43,10 @@
 
 // function prototypes
 // see response.c for documentation
-int get_status_code(request_t*, char*);
-void send_status_line(int, request_t*, char*);
-void send_http_headers(int, char*);
+int get_status_code(request_t *, char *);
+void send_status_line(int, request_t *, char *);
+void send_mimetype(int, request_t *);
+void send_http_headers(int, request_t *);
 void send_contents(int, char *);
 
 #endif

@@ -1,5 +1,8 @@
 # General references
 
+### Hypertext Transfer Protocol
+- https://datatracker.ietf.org/doc/html/rfc1945
+
 ### comp30023 practical code from week 9 (Sockets)
 
 ### comp30023 practical code from week 10 (multiplexing)
@@ -17,6 +20,7 @@
 
 ### IBM documentation pages
 - https://www.ibm.com/docs/en/cics-ts/5.2?topic=protocol-http-responses
+- https://www.ibm.com/docs/en/zos/2.4.0?topic=files-timeh-time-date#timeh
 
 ### MIME types 
 - https://mimetype.io/all-types

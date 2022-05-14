@@ -59,6 +59,7 @@ void send_status_line(int socketfd, request_t* request, char* full_path) {
     int status_code = get_status_code(request, full_path);
     int ret;
     // get reason
+    printf("Status code in send_status_line(): %d\n", status_code);
     if (status_code == OK) {
         reason = OK_STR;
     }
@@ -87,25 +88,82 @@ void send_status_line(int socketfd, request_t* request, char* full_path) {
 }
 
 
-// formats and sends the http headers
-void send_http_headers(int socketfd, char* mime_type) {
-    int ret;
-    char* headers;
-    time_t _time;
-    time(&_time);
-    struct tm *time = localtime(&_time);
-    // format headers
-    // TODO: format the date as specified by the standard for http/1.0
-    ret = asprintf(&headers, "Date: %sContent-type: %s%s%s", asctime(time),
-                   mime_type, CRLF, CRLF);
-    if (ret < 0) {
+// takes `socketfd` file descriptor and the request_t `request` and sends the
+// appropriate mime type in the "Content-Type" http header
+void send_mimetype(int socketfd, request_t *request) {
+    char *header, *extension;
+
+    // set default mime type
+    char mime_type[HEADER_MAX] = "application/octet-stream";
+
+
+    // get extension (will be NULL if no extension)
+    extension = strrchr(request->path, (int)'.');
+
+    // find appropriate mime type for other extensions
+    if (extension != NULL) {
+        if (strcmp(extension, ".html") == 0) {
+            strcpy(mime_type, "text/html");
+        }
+        else if (strcmp(extension, ".jpg") == 0) {
+            strcpy(mime_type, "image/jpeg");
+        }
+        else if (strcmp(extension, ".css") == 0) {
+            strcpy(mime_type, "text/css");
+        }
+        else if (strcmp(extension, ".js") == 0) {
+            strcpy(mime_type, "text/javascript");
+        }
+    }
+
+    // format the content-type header
+    if (asprintf(&header, "Content-type: %s%s", mime_type, CRLF) < 0) {
         // error occurred during formatting
-        perror("format");
+        perror("asprintf mime type formatting");
         return;
     }
-    if (write(socketfd, headers, strlen(headers)) < 0) {
+
+    if (write(socketfd, header, strlen(header)) < 0) {
         // error occurred during writing to socket
-        perror("write headers");
+        perror("write mime type");
+        return;
+    }
+
+}
+
+
+// sends the "Date" header line of the http headers in the response
+void send_datetime(int socketfd) {
+    // TODO: format the date as specified by the standard for http/1.0
+    char header[HEADER_MAX];
+    time_t _time;
+    time(&_time);
+    struct tm *time = gmtime(&_time);
+
+    // format the Date header
+    if (strftime(header, HEADER_MAX, "Date: %a, %d %b %Y %H:%M:%S %Z", time) < 0) {
+        // error occurred during formatting
+        perror("format datetime");
+        return;
+    }
+    if (write(socketfd, header, strlen(header)) < 0) {
+        // error occurred during writing to socket
+        perror("write datetime");
+        return;
+    }
+}
+
+// formats and sends the http headers
+void send_http_headers(int socketfd, request_t *request) {
+    // headers
+    send_mimetype(socketfd, request);
+    send_datetime(socketfd);
+
+    // send final CRLF
+    if (write(socketfd, CRLF, 2) < 0) {
+        // error occurred during writing to socket
+        perror("write final CRLF");
+        return;
     }
 }
 
