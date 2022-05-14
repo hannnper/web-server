@@ -32,7 +32,7 @@
 // set maximum number of epoll events
 #define MAX_EVENTS 10
 
-// chars that end the request header line (CRLF)
+// end of line chars (CRLF)
 #define CRLF "\r\n"
 
 // function prototypes

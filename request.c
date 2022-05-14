@@ -21,8 +21,9 @@ request_t* process_request(char* req_string) {
     request->method = INVALID;
     request->path[0] = '\0';
 
-    // check if req_string is empty
-    if (strcmp(req_string, CRLF) == 0 || strcmp(req_string, "\n") == 0) {
+    // check if req_string is empty or just \n or \r\n
+    if (strlen(req_string) == 0 || strcmp(req_string, CRLF) == 0 ||
+        strcmp(req_string, "\n") == 0) {
         // empty request is INVALID, so just return defaults
         return request;
     }
@@ -42,7 +43,11 @@ request_t* process_request(char* req_string) {
     char *version = strtok_r(next_tok, SEPS, &next_tok);
     printf("req: %s, path: %s, ver: %s\n", req_type, path, version);
     // check if the request method is a supported type
-    if (strcmp(req_type, GET_STR) == 0) {
+    if (req_type == NULL) {
+        // avoid using strcmp on NULL
+        return request;
+    }
+    else if (strcmp(req_type, GET_STR) == 0) {
         // this is a GET request
         request->method = GET;
     }

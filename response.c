@@ -63,6 +63,9 @@ void send_status_line(int socketfd, request_t* request, char* full_path) {
     if (status_code == OK) {
         reason = OK_STR;
     }
+    else if (status_code == BAD_REQUEST) {
+        reason = BAD_REQUEST_STR;
+    }
     else if (status_code == NOT_FOUND) {
         reason = NOT_FOUND_STR;
     }

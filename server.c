@@ -121,6 +121,12 @@ int main(int argc, char** argv) {
 				// accept connection
 				accept_connection(sockfd, epollfd);
 			}
+			else if (events[i].events & EPOLLRDHUP || events[i].events & EPOLLHUP) {
+				// connection was closed by client so deregister the fd of
+				// this socket and don't do any further reading
+				epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+				printf("disconnect on socket: %d", events[i].data.fd);
+			}
 			else {
 				// there is something to read from the socket (and it is not
 				// the listener socket)
@@ -128,13 +134,20 @@ int main(int argc, char** argv) {
 				n = read(events[i].data.fd, buffer, BUFFER_SIZE);
 				if (n < 0) {
 					perror("read");
-					exit(EXIT_FAILURE);
+					continue;
+				}
+				else if (n == 0) {
+					// nothing to read from socket
+					epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+					printf("disconnect on socket: %d", events[i].data.fd);
+					continue;
 				}
 				// Null-terminate string
 				buffer[n] = '\0';
 
 				// print the request
 				printf("Here is the request: %s\n", buffer);
+				printf("length: %ld\n", strlen(buffer));
 
 				// process the request
 				request = process_request(buffer);
