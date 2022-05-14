@@ -13,7 +13,10 @@
 #include "request.h"
 #include "response.h"
 
+// IPv6 compatible
 #define IMPLEMENTS_IPV6
+// actually uses epoll rather than multithreading to implement the multiplexing
+#define MULTITHREADED
 
 int main(int argc, char** argv) {
     int protocol, s, n, sockfd, status_code, i;
@@ -51,12 +54,14 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
+	printf("creating socket...\n");
 	// Create socket
 	sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if (sockfd < 0) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
+	printf("created socket: %d\n", sockfd);
 
 	// reuse port (code from project specifications)
 	int enable = 1;
@@ -77,16 +82,26 @@ int main(int argc, char** argv) {
 		perror("listen");
 		exit(EXIT_FAILURE);
 	}
+	printf("now listening\n");
 
 	// create file descriptor for the epoll instance
 	int epollfd = epoll_create1(0);
 	int event_count = 0;
 	// struct epoll_event: events (bit set), data (epoll_data_t: has fd)
 	struct epoll_event events[MAX_EVENTS];
+	struct epoll_event event;
+	event.data.fd = sockfd;
+	event.events = EPOLLIN;
+	// add listening socket to epoll
+	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, sockfd, &event) < 0) {
+		printf("failed to add listening socket to epoll\n");
+		exit(EXIT_FAILURE);
+	}
 
 	while (true) {
 		// wait for epoll (-1 for no timeout)
 		event_count = epoll_wait(epollfd, events, MAX_EVENTS, -1);
+		printf("There are %d epoll events\n", event_count);
 
 		// iterate over ready events
 		for (i = 0; i < event_count; i++) {
@@ -94,7 +109,7 @@ int main(int argc, char** argv) {
 				// accept connection
 				accept_connection(sockfd, epollfd);
 			}
-			else if (events[i].events & EPOLLIN) {
+			else {
 				// there is something to read from the socket (and it is not
 				// the listener socket)
 				char buffer[BUFFER_SIZE + 1];
@@ -146,6 +161,8 @@ int main(int argc, char** argv) {
 
 		
 	}
+
+	// it won't actually get to this part
 	close(epollfd);
 	close(sockfd);
 	return 0;

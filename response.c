@@ -80,7 +80,7 @@ void send_status_line(int socketfd, request_t* request, char* server_path) {
     }
     // format the status line
     ret = asprintf(&status_line, "%s %3.3d %s%s", HTTP_VER, status_code,
-             reason, LINE_END);
+             reason, CRLF);
     if (ret < 0) {
         // error occurred during formatting
         perror("format:");
@@ -101,11 +101,17 @@ void send_http_headers(int socketfd, char* mime_type) {
     // format headers
     // TODO: format the date as specified by the standard for http/1.0
     ret = asprintf(&headers, "Date: %sContent-type: %s%s%s", asctime(time),
-                   mime_type, LINE_END, LINE_END);
+                   mime_type, CRLF, CRLF);
     if (ret < 0) {
         // error occurred during formatting
         perror("format:");
         exit(EXIT_FAILURE);
     }
     send(socketfd, headers, strlen(headers), 0);
+}
+
+
+// sends the file to the socket
+void send_contents(int socketfd, char *path) {
+    ;
 }

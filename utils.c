@@ -48,7 +48,7 @@ int accept_connection(int sockfd, int epollfd) {
     // set up epoll event
     struct epoll_event event;
     event.data.fd = fd;
-    event.events = 0;  //TODO: find what goes here???
+    event.events = EPOLLIN;
 
     // add this new file descriptor to the epoll
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event) < 0) {
@@ -56,6 +56,8 @@ int accept_connection(int sockfd, int epollfd) {
         perror("epoll_ctl");
         return FAIL;
     }
+    printf("Connected on socket: %d\n", fd);
+
     return fd;
 }
 

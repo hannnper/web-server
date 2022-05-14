@@ -32,6 +32,9 @@
 // set maximum number of epoll events
 #define MAX_EVENTS 10
 
+// chars that end the request header line (CRLF)
+#define CRLF "\r\n"
+
 // function prototypes
 // see utils.c for documentation
 int get_protocol(char*);

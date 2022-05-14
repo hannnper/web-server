@@ -44,6 +44,7 @@
 int get_status_code(request_t*, char*);
 void send_status_line(int, request_t*, char*);
 void send_http_headers(int, char*);
+void send_contents(int, char *);
 
 #endif
 

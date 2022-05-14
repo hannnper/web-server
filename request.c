@@ -25,7 +25,7 @@ request_t* process_request(char* req_string) {
     // take only request header line
     char* rest = NULL;
     strncpy(req_copy, req_string, BUFFER_SIZE);
-    strcpy(req_copy, strtok_r(req_copy, LINE_END, &rest));
+    strcpy(req_copy, strtok_r(req_copy, CRLF, &rest));
     char* next_tok = NULL;
     char* req_type = strtok_r(req_copy, SEPS, &next_tok);
     char* path = strtok_r(next_tok, SEPS, &next_tok);
