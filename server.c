@@ -172,6 +172,7 @@ int main(int argc, char** argv) {
 				// clean up
 				free(file_path);
 				// close connection after sending response
+				close(events[i].data.fd);
 				epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
 				printf("disconnect socket (after sending response): %d", 
 						events[i].data.fd);
