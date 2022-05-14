@@ -200,10 +200,4 @@ void send_contents(int socketfd, char *path) {
         perror("sendfile");
         return;
     }
-
-    // send final CRLF
-    if (write(socketfd, CRLF, strlen(CRLF)) < 0) {
-        perror("write CRLF");
-        return;
-    }
 }
