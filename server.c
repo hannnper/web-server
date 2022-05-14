@@ -20,8 +20,8 @@
 
 int main(int argc, char** argv) {
     int protocol, s, n, sockfd, status_code, i;
-    char* port;
-    char* server_path;
+    char *port;
+    char *server_path, *file_path;
     struct addrinfo hints, *res;
     request_t* request;
 
@@ -128,14 +128,23 @@ int main(int argc, char** argv) {
 				request = process_request(buffer);
 				printf("method: %d, path: %s\n", request->method, request->path);
 
+				// get the full path to the requested file
+				// (including server path)
+				file_path = get_full_path(server_path, request);
+				printf("full path to requested file: %s\n", file_path);
+
 				// get the status code for the response to the request
-				status_code = get_status_code(request, server_path);
+				status_code = get_status_code(request, file_path);
 				printf("status code: %d\n", status_code);
 				send_status_line(events[i].data.fd, request, server_path);
 				if (status_code == OK) {
 					// send headers and content if OK status code
 					send_http_headers(events[i].data.fd, "put mimetype here");
+					// send the requested file contents
+					send_contents(events[i].data.fd, file_path);
+					
 				}
+				free(file_path);
 			}
 		}
 

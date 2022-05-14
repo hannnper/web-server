@@ -16,23 +16,23 @@
 // process_request() takes a string request and returns a pointer to a request_t
 // containing the information for the request
 request_t* process_request(char* req_string) {
-    request_t* request = malloc(sizeof(request_t));
+    request_t *request = malloc(sizeof(request_t));
     assert(request != NULL);
     request->method = INVALID;
     request->path[0] = '\0';
     // split the request string header into parts
     char req_copy[BUFFER_SIZE + 1];
     // take only request header line
-    char* rest = NULL;
+    char *rest = NULL;
     strncpy(req_copy, req_string, BUFFER_SIZE);
     strcpy(req_copy, strtok_r(req_copy, CRLF, &rest));
-    char* next_tok = NULL;
-    char* req_type = strtok_r(req_copy, SEPS, &next_tok);
-    char* path = strtok_r(next_tok, SEPS, &next_tok);
+    char *next_tok = NULL;
+    char *req_type = strtok_r(req_copy, SEPS, &next_tok);
+    char *path = strtok_r(next_tok, SEPS, &next_tok);
     if (path != NULL) {
         strcpy(request->path, path);
     }
-    char* version = strtok_r(next_tok, SEPS, &next_tok);
+    char *version = strtok_r(next_tok, SEPS, &next_tok);
     printf("req: %s, path: %s, ver: %s\n", req_type, path, version);
     
     // check if the request method is a supported type
@@ -45,4 +45,19 @@ request_t* process_request(char* req_string) {
     }
     return request;
 }
+
+
+// combines the path to the root of the web server with the requested path
+// note: this uses malloc so returned string needs to be freed after use
+char* get_full_path(char *server_path, request_t *request) {
+    int total_len = strlen(server_path) + strlen(request->path);
+    char *full_path = malloc(sizeof(char) * (total_len + 1));
+    strcpy(full_path, server_path);
+    full_path = strcat(full_path, request->path);
+    return full_path;
+}
+
+
+
+
 

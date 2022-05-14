@@ -8,6 +8,7 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <time.h>
+#include <fcntl.h>
 #include "utils.h"
 #include "request.h"
 #include "response.h"
@@ -15,15 +16,15 @@
 
 // function definitions
 
-// takes request_t `request` and returns an integer http status code:
+// takes request_t `request` and char* `full_path` (full path to requested file)
+// and returns an integer http status code:
 // OK 200
 // BAD_REQUEST 400
 // FORBIDDEN 403
 // NOT_FOUND 404
 // TEAPOT 418
-int get_status_code(request_t* request, char* server_path) {
-    int ret, total_len;
-    char* full_path;
+int get_status_code(request_t* request, char* full_path) {
+    int ret;
     struct stat buf;
     // check if method is invalid
     if (request->method == INVALID) {
@@ -33,20 +34,12 @@ int get_status_code(request_t* request, char* server_path) {
         return TEAPOT;
     }
     // check if filepath contains "../"
-    if (strstr(request->path, "../") != NULL) {
+    if (strstr(full_path, "/../") != NULL) {
         // return NOT_FOUND 404
         return NOT_FOUND;
     }
     // check file exists and permissions
-    // this part may not be threadsafe!!! 
-    // TODO: make threadsafe
-    total_len = strlen(server_path) + strlen(request->path);
-    full_path = malloc(sizeof(char) * total_len);
-    strcpy(full_path, server_path);
-    full_path = strcat(full_path, request->path);
-    printf("full path: %s\n", full_path);
     ret = stat(full_path, &buf);
-    free(full_path);
     if (ret != 0) {
         if (errno == EACCES) {
             // permission denied
@@ -60,10 +53,10 @@ int get_status_code(request_t* request, char* server_path) {
 
 
 // formats and sends the status line of the response to the given socketfd
-void send_status_line(int socketfd, request_t* request, char* server_path) {
+void send_status_line(int socketfd, request_t* request, char* full_path) {
     char* status_line;
     char* reason;
-    int status_code = get_status_code(request, server_path);
+    int status_code = get_status_code(request, full_path);
     int ret;
     // get reason
     if (status_code == OK) {
@@ -84,10 +77,13 @@ void send_status_line(int socketfd, request_t* request, char* server_path) {
     if (ret < 0) {
         // error occurred during formatting
         perror("format:");
-        exit(EXIT_FAILURE);
+        return;
     }
     // send the status line
-    send(socketfd, status_line, strlen(status_line), 0);
+    if (write(socketfd, status_line, strlen(status_line)) < 0) {
+        // error occurred during writing to socket
+        perror("write status line");
+    }
 }
 
 
@@ -104,14 +100,39 @@ void send_http_headers(int socketfd, char* mime_type) {
                    mime_type, CRLF, CRLF);
     if (ret < 0) {
         // error occurred during formatting
-        perror("format:");
-        exit(EXIT_FAILURE);
+        perror("format");
+        return;
     }
-    send(socketfd, headers, strlen(headers), 0);
+    if (write(socketfd, headers, strlen(headers)) < 0) {
+        // error occurred during writing to socket
+        perror("write headers");
+    }
 }
 
 
-// sends the file to the socket
+// sends the file at the given `path` to the socket `socketfd`
 void send_contents(int socketfd, char *path) {
-    ;
+    // open the file and store a file descriptor for it
+    int filed = open(path, O_RDONLY);
+    if (filed < 0) {
+        // something went wrong in attempt to open file
+        perror("file open");
+        return;
+    }
+
+    // get file size
+    struct stat buf;
+    if (fstat(filed, &buf) < 0) {
+        // something went wrong when attempting to find file stats
+        perror("file stats");
+        return;
+    }
+
+    ssize_t bytes_sent;
+    bytes_sent = sendfile(socketfd, filed, NULL, buf.st_size);
+    if (bytes_sent < 0) {
+        // something went wrong when attempting to send the file contents
+        perror("sendfile");
+        return;
+    }
 }

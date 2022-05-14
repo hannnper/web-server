@@ -27,6 +27,7 @@ typedef struct request_t {
 
 // function prototypes
 // see request.c for documentation
-request_t* process_request(char*);
+request_t* process_request(char *);
+char* get_full_path(char *, request_t *);
 
 #endif

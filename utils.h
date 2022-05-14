@@ -37,7 +37,8 @@
 
 // function prototypes
 // see utils.c for documentation
-int get_protocol(char*);
+int get_protocol(char *);
 int accept_connection(int, int);
+
 
 #endif

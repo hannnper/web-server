@@ -27,5 +27,6 @@
 - https://man7.org/linux/man-pages/man3/asprintf.3.html
 - https://man7.org/linux/man-pages/man7/epoll.7.html
 - https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/netdb.h.html
+- https://man7.org/linux/man-pages/man2/open.2.html
 
 
