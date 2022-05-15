@@ -26,12 +26,15 @@
 
 // constants
 #define FAIL -1
+#define SUCCESS 0
 
 // can assume that GET requests will be no larger than 2kB in size
 #define BUFFER_SIZE 2048
 
 // set maximum number of epoll events
 #define MAX_EVENTS 10
+// set maximum number of concurrent connections
+#define MAX_CONNECTIONS 10
 
 // end of line chars (CRLF)
 #define CRLF "\r\n"

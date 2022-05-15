@@ -19,14 +19,26 @@
 
 // type definitions
 
+typedef struct message_t {
+    bool ready;                    // indicates if it is ready to be processed
+    int fd;                        // source file desc
+    int n_read;                    // how many chars have been read in
+    char buffer[BUFFER_SIZE + 1];  // buffer for storing partial message
+    struct message_t *next;        // pointer to next message
+} message_t;
+
 typedef struct request_t {
     int method;                   // request method (e.g. GET)
-    char path[BUFFER_SIZE + 1];   // string path
+    char path[BUFFER_SIZE + 1];   // string path to requested file from web root
 } request_t;
 
 
 // function prototypes
 // see request.c for documentation
+message_t* add_message(int, message_t *);
+message_t* delete_message(int, message_t *);
+message_t* find_message(int, message_t *);
+void update_message_status(message_t *);
 request_t* process_request(char *);
 char* get_full_path(char *, request_t *);
 

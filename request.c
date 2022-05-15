@@ -13,6 +13,66 @@
 
 // function definitions
 
+// use add_message() to add an element in the messages linked list to store 
+// the incoming message from this socket, returns pointer to linked list of
+// messages
+message_t* add_message(int socketfd, message_t *head) {
+    message_t *new_message = malloc(sizeof(message_t));
+    new_message->ready = false;
+    new_message->fd = socketfd;
+    new_message->buffer[0] = '\0';
+    new_message->n_read = 0;
+    new_message->next = head;
+    return new_message;
+}
+
+
+// use delete_message() to delete message from the linked list, returns a
+// pointer to linked list of messages
+message_t* delete_message(int socketfd, message_t *head) {
+    if (head == NULL) {
+        // no message to delete
+        return NULL;
+    }
+    else if (head->fd == socketfd) {
+        // the message to delete is at the front of the linked list
+        message_t *rest = head->next;
+        free(head);
+        return rest;
+    }
+    else {
+        head->next = delete_message(socketfd, head->next);
+        return head;
+    }
+}
+
+
+// returns a pointer to the message_t which contains the message data for the
+// specified socketfd
+message_t* find_message(int socketfd, message_t *head) {
+    if (head == NULL) {
+        // message not in list
+        return NULL;
+    }
+    else if (head->fd == socketfd) {
+        return head;
+    }
+    else {
+        return find_message(socketfd, head->next);
+    }
+}
+
+
+// update the ready flag in message struct
+void update_message_status(message_t *message) {
+    // request is ready to be processed once it contains a CRLF
+    if (strstr(message->buffer, CRLF) != NULL) {
+        message->ready = true;
+        return;
+    }
+}
+
+
 // process_request() takes a string request and returns a pointer to a request_t
 // containing the information for the request
 request_t* process_request(char* req_string) {

@@ -90,11 +90,14 @@ int main(int argc, char** argv) {
 
 	// Listen on socket - means we're ready to accept connections,
 	// incoming connection requests will be queued, man 3 listen
-	if (listen(sockfd, 5) < 0) {
+	if (listen(sockfd, MAX_CONNECTIONS) < 0) {
 		perror("listen");
 		exit(EXIT_FAILURE);
 	}
 	printf("now listening\n");
+
+	// partial message storage
+	message_t *messages = NULL;
 
 	// create file descriptor for the epoll instance
 	int epollfd = epoll_create1(0);
@@ -119,63 +122,86 @@ int main(int argc, char** argv) {
 		for (i = 0; i < event_count; i++) {
 			if ((events[i].events & EPOLLIN) && (events[i].data.fd == sockfd)) {
 				// accept connection
-				accept_connection(sockfd, epollfd);
+				int newfd = accept_connection(sockfd, epollfd);
+				if (newfd < 0) {
+					// failure in accept_connection
+					printf("failed to accept new connection\n");
+					continue;
+				}
+				messages = add_message(newfd, messages);
 			}
 			else if (events[i].events & EPOLLRDHUP || events[i].events & EPOLLHUP) {
 				// connection was closed by client so deregister the fd of
 				// this socket and don't do any further reading
 				epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+				close(events[i].data.fd);
+				messages = delete_message(events[i].data.fd, messages);
 				printf("disconnect on socket: %d", events[i].data.fd);
 			}
 			else {
 				// there is something to read from the socket (and it is not
 				// the listener socket)
-				char buffer[BUFFER_SIZE + 1];
-				n = read(events[i].data.fd, buffer, BUFFER_SIZE);
+				message_t *message = find_message(events[i].data.fd, messages);
+				printf("message pointer: %p, message: %s, n_read: %d\n", message, message->buffer, message->n_read);
+				n = read(events[i].data.fd, &message->buffer[message->n_read], 
+						 BUFFER_SIZE - message->n_read);
+				// update n_read for this message
+				message->n_read = message->n_read + n;
+				printf("message pointer: %p, message: %s, n_read: %d\n", message, message->buffer, message->n_read);
 				if (n < 0) {
 					perror("read");
 					continue;
 				}
 				else if (n == 0) {
-					// nothing to read from socket
+					// nothing to read from socket (but there was an epoll event)
 					epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+					close(events[i].data.fd);
+					messages = delete_message(events[i].data.fd, messages);
 					printf("disconnect on socket: %d", events[i].data.fd);
 					continue;
 				}
 				// Null-terminate string
-				buffer[n] = '\0';
+				message->buffer[message->n_read] = '\0';
 
 				// print the request
-				printf("Here is the request: %s\n", buffer);
-				printf("length: %ld\n", strlen(buffer));
+				printf("Here is the request: %s\n", message->buffer);
+				printf("length: %ld\n", strlen(message->buffer));
 
-				// process the request
-				request = process_request(buffer);
-				printf("method: %d, path: %s\n", request->method, request->path);
+				// update request readiness status
+				update_message_status(message);
 
-				// get the full path to the requested file
-				// (including server path)
-				file_path = get_full_path(server_path, request);
-				printf("full path to requested file: %s\n", file_path);
+				// process request only if it is ready
+				if (message->ready) {
+					// process the request
+					request = process_request(message->buffer);
+					printf("method: %d, path: %s\n", request->method, request->path);
 
-				// get the status code for the response to the request
-				status_code = get_status_code(request, file_path);
-				printf("status code: %d\n", status_code);
-				send_status_line(events[i].data.fd, request, file_path);
-				if (status_code == OK) {
-					// send headers and content if OK status code
-					send_http_headers(events[i].data.fd, request);
-					// send the requested file contents
-					send_contents(events[i].data.fd, file_path);
-					
+					// get the full path to the requested file
+					// (including server path)
+					file_path = get_full_path(server_path, request);
+					printf("full path to requested file: %s\n", file_path);
+
+					// get the status code for the response to the request
+					status_code = get_status_code(request, file_path);
+					printf("status code: %d\n", status_code);
+					send_status_line(events[i].data.fd, request, file_path);
+					if (status_code == OK) {
+						// send headers and content if OK status code
+						send_http_headers(events[i].data.fd, request);
+						// send the requested file contents
+						send_contents(events[i].data.fd, file_path);
+						
+					}
+					// clean up
+					free(file_path);
+					// close connection after sending response
+					epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
+					close(events[i].data.fd);
+					messages = delete_message(events[i].data.fd, messages);
+					printf("disconnect socket (after sending response): %d\n", 
+							events[i].data.fd);
 				}
-				// clean up
-				free(file_path);
-				// close connection after sending response
-				epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-				close(events[i].data.fd);
-				printf("disconnect socket (after sending response): %d\n", 
-						events[i].data.fd);
+
 			}
 		}
 
