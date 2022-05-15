@@ -137,7 +137,6 @@ void send_mimetype(int socketfd, request_t *request) {
 
 // sends the "Date" header line of the http headers in the response
 void send_datetime(int socketfd) {
-    // TODO: format the date as specified by the standard for http/1.0
     char header[HEADER_MAX];
     time_t _time;
     time(&_time);

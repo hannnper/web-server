@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
 				epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
 				close(events[i].data.fd);
 				messages = delete_message(events[i].data.fd, messages);
-				printf("disconnect on socket: %d", events[i].data.fd);
+				printf("disconnect on socket: %d\n", events[i].data.fd);
 			}
 			else {
 				// there is something to read from the socket (and it is not
@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
 					epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
 					close(events[i].data.fd);
 					messages = delete_message(events[i].data.fd, messages);
-					printf("disconnect on socket: %d", events[i].data.fd);
+					printf("disconnect on socket: %d\n", events[i].data.fd);
 					continue;
 				}
 				// Null-terminate string
@@ -205,8 +205,11 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		//TODO: fix how the server deals with partial requests
+		//TODO: find out why it seg faults sometimes
 		//TODO: properly implement IPv6
+		//TODO: make sure checking permissions works (it doesn't seem to)
+		//TODO: respond with 404 to requests for a directory
+		//TODO: implement http version checking
 		//TODO: check valgrind
 	}
 

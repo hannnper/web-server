@@ -81,26 +81,25 @@ request_t* process_request(char* req_string) {
     request->method = INVALID;
     request->path[0] = '\0';
 
-    // check if req_string is empty or just \n or \r\n
-    if (strlen(req_string) == 0 || strcmp(req_string, CRLF) == 0 ||
-        strcmp(req_string, "\n") == 0) {
-        // empty request is INVALID, so just return defaults
-        return request;
-    }
-
     // split the request string header into parts
     char req_copy[BUFFER_SIZE + 1];
     // take only request header line
     char *rest = NULL;
     strncpy(req_copy, req_string, BUFFER_SIZE);
-    strcpy(req_copy, strtok_r(req_copy, CRLF, &rest));
+    // get everything before the CRLF (just ignore body of request if it exists)
+    char *req_line = strtok_r(req_copy, CRLF, &rest);
+    // check if req_line is NULL (the case for empty or all-delim string input)
+    if (req_line == NULL) {
+        // request is INVALID, and must avoid calls to strtok_r()
+        return request;
+    }
     char *next_tok = NULL;
-    char *req_type = strtok_r(req_copy, SEPS, &next_tok);
+    char *req_type = strtok_r(req_line, SEPS, &next_tok);
     char *path = strtok_r(next_tok, SEPS, &next_tok);
+    char *version = strtok_r(next_tok, SEPS, &next_tok);
     if (path != NULL) {
         strcpy(request->path, path);
     }
-    char *version = strtok_r(next_tok, SEPS, &next_tok);
     printf("req: %s, path: %s, ver: %s\n", req_type, path, version);
     // check if the request method is a supported type
     if (req_type == NULL) {
