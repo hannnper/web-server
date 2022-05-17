@@ -30,17 +30,6 @@
 #define TEAPOT_STR "I'm a teapot"
 
 
-    //format response
-    //          - status line: 
-    //              - http version (HTTP/1.0)
-    //              - status code (200/403/404/400...) 
-    //              - reason phrase (OK/Forbidden/Not Found/Bad Request...)
-    //          - http headers:
-    //              - Date
-    //              - Server
-    //              - Content-type
-    //          - message body
-
 // function prototypes
 // see response.c for documentation
 int get_status_code(request_t *, char *);

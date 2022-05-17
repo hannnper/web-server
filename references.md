@@ -32,5 +32,9 @@
 - https://man7.org/linux/man-pages/man7/epoll.7.html
 - https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/netdb.h.html
 - https://man7.org/linux/man-pages/man2/open.2.html
+- https://man7.org/linux/man-pages/man3/strtok.3.html
+- https://www.gnu.org/software/libc/manual/html_node/Reading-Attributes.html
+- https://www.gnu.org/software/libc/manual/html_node/Testing-File-Access.html
+
 
 

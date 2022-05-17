@@ -205,11 +205,9 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		//TODO: find out why it seg faults sometimes
 		//TODO: properly implement IPv6
-		//TODO: make sure checking permissions works (it doesn't seem to)
-		//TODO: respond with 404 to requests for a directory
 		//TODO: implement http version checking
+		//TODO: remove all perror() from after listening part (THIS FUNCTIONS EXITS THE PROGRAM!)
 		//TODO: check valgrind
 	}
 

@@ -33,20 +33,29 @@ int get_status_code(request_t* request, char* full_path) {
     else if (request->method == BREW) {
         return TEAPOT;
     }
-    // check if filepath contains "../"
-    if (strstr(full_path, "/../") != NULL) {
+
+    // check if filepath contains ".."
+    if (strstr(request->path, "/../") != NULL) {
         // return NOT_FOUND 404
         return NOT_FOUND;
     }
-    // check file exists and permissions
+
+    // check file exists and is regular
     ret = stat(full_path, &buf);
     if (ret != 0) {
-        if (errno == EACCES) {
-            // permission denied
-            return FORBIDDEN;
-        }
+        // error in stat() call, e.g. file doesn't exist
         return NOT_FOUND;
     }
+    if (S_ISREG(buf.st_mode) == 0) {
+        // not a regular file, may be directory/socket/symlink/etc
+        return NOT_FOUND;
+    }
+
+    // check permission for reading file
+    if (access(full_path, R_OK) < 0) {
+        return FORBIDDEN;
+    }
+
     // otherwise all okay
     return OK;
 }
@@ -80,7 +89,7 @@ void send_status_line(int socketfd, request_t* request, char* full_path) {
              reason, CRLF);
     if (ret < 0) {
         // error occurred during formatting
-        perror("format:");
+        perror("format");
         return;
     }
     // send the status line
@@ -143,7 +152,8 @@ void send_datetime(int socketfd) {
     struct tm *time = gmtime(&_time);
 
     // format the Date header
-    if (strftime(header, HEADER_MAX, "Date: %a, %d %b %Y %H:%M:%S %Z\r\n", time) < 0) {
+    if (strftime(header, HEADER_MAX, "Date: %a, %d %b %Y %H:%M:%S %Z\r\n",
+         time) < 0) {
         // error occurred during formatting
         perror("format datetime");
         return;
