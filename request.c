@@ -65,8 +65,8 @@ message_t* find_message(int socketfd, message_t *head) {
 
 // update the ready flag in message struct
 void update_message_status(message_t *message) {
-    // request is ready to be processed once it contains a CRLF
-    if (strstr(message->buffer, CRLF) != NULL) {
+    // request is ready to be processed once it ends in two CRLF 
+    if (strstr(message->buffer, CRLF CRLF) != NULL) {
         message->ready = true;
         return;
     }
@@ -97,8 +97,13 @@ request_t* process_request(char* req_string) {
     char *req_type = strtok_r(req_line, SEPS, &next_tok);
     char *path = strtok_r(next_tok, SEPS, &next_tok);
     char *version = strtok_r(next_tok, SEPS, &next_tok);
+
+    // copy path and version info to request if they are non-NULL
     if (path != NULL) {
         strcpy(request->path, path);
+    }
+    if (version != NULL) {
+        strncpy(request->http_ver, version, MAX_VER_LEN);
     }
     printf("req: %s, path: %s, ver: %s\n", req_type, path, version);
     // check if the request method is a supported type

@@ -16,6 +16,7 @@
 #define HEADER_MAX 256
 // http version
 #define HTTP_VER "HTTP/1.0"
+#define HTCPCP "HTCPCP/1.0"
 // status codes
 #define OK 200
 #define BAD_REQUEST 400

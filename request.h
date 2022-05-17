@@ -9,6 +9,7 @@
 #define REQUEST_H
 
 // constants
+#define MAX_VER_LEN 20
 // request method types
 #define INVALID 0
 #define GET 1
@@ -28,8 +29,10 @@ typedef struct message_t {
 } message_t;
 
 typedef struct request_t {
-    int method;                   // request method (e.g. GET)
-    char path[BUFFER_SIZE + 1];   // string path to requested file from web root
+    int method;                      // request method (e.g. GET)
+    char path[BUFFER_SIZE + 1];      // string path to requested file
+                                     //     from web root
+    char http_ver[MAX_VER_LEN + 1];  // http version
 } request_t;
 
 

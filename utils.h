@@ -33,7 +33,7 @@
 
 // set maximum number of epoll events
 #define MAX_EVENTS 10
-// set maximum number of concurrent connections
+// set maximum number of queued connections
 #define MAX_CONNECTIONS 10
 
 // end of line chars (CRLF)
