@@ -8,7 +8,7 @@
 ### comp30023 practical code from week 10 (multiplexing)
 
 ### Beej's Guide to Network Programming
-- http://www.cs.columbia.edu/~danr/courses/6761/Fall00/hw/pa1/6761-sockhelp.pdf
+- https://beej.us/guide/bgnet/pdf/bgnet_a4_c_1.pdf
 
 ### wikipedia
 - https://en.wikipedia.org/wiki/Getaddrinfo
@@ -17,6 +17,7 @@
 
 ### Mozilla docs
 - https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
 
 ### IBM documentation pages
 - https://www.ibm.com/docs/en/cics-ts/5.2?topic=protocol-http-responses
@@ -35,6 +36,7 @@
 - https://man7.org/linux/man-pages/man3/strtok.3.html
 - https://www.gnu.org/software/libc/manual/html_node/Reading-Attributes.html
 - https://www.gnu.org/software/libc/manual/html_node/Testing-File-Access.html
+- https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
 
 
 

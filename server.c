@@ -19,10 +19,10 @@
 #define MULTITHREADED
 
 int main(int argc, char** argv) {
-    int protocol, s, n, sockfd, status_code, i;
+    int protocol, sockfd, status_code, i, s, n;
     char *port;
-    char *server_path, *file_path;
-    struct addrinfo hints, *res;
+    char *server_path, *file_path, *protocol_string;
+    struct addrinfo hints, *result;
     request_t* request;
 
     // print usage information if incorrect number command line arguments given
@@ -35,11 +35,13 @@ int main(int argc, char** argv) {
     }
 
     // get protocol, port and server path from command line arguments
-    protocol = get_protocol(argv[1]);
+	protocol_string = argv[1];
+    protocol = get_protocol(protocol_string);
     port = argv[2];
     server_path = argv[3];
 
-    printf("%d %s %s\n",protocol, port, server_path);
+    printf("Initialising server with IPv%s on port %s\nwith root %s...\n",
+			protocol_string, port, server_path);
 
 	// check server_path exists
 	struct stat stat_buf;
@@ -49,7 +51,7 @@ int main(int argc, char** argv) {
 	}
 	else if (S_ISDIR(stat_buf.st_mode) == 0) {
 		// server path is not a directory
-		printf("server path (root directory) is not a directory\n");
+		printf("server path (web root) is not a directory\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -59,8 +61,8 @@ int main(int argc, char** argv) {
     hints.ai_family = protocol;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-	// node (NULL means any interface), service (port), hints, res
-	s = getaddrinfo(NULL, port, &hints, &res);
+	// node (NULL means any interface), service (port), hints, result
+	s = getaddrinfo(NULL, port, &hints, &result);
 	if (s != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
 		exit(EXIT_FAILURE);
@@ -68,12 +70,10 @@ int main(int argc, char** argv) {
 
 	printf("creating socket...\n");
 	// Create socket
-	sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	if (sockfd < 0) {
-		perror("socket");
-		exit(EXIT_FAILURE);
-	}
-	printf("created socket: %d\n", sockfd);
+	sockfd = socket(result->ai_family, result->ai_socktype, 
+					result->ai_protocol);
+
+	
 
 	// reuse port (code from project specifications)
 	int enable = 1;
@@ -81,12 +81,14 @@ int main(int argc, char** argv) {
 		perror("setsockopt");
 		exit(EXIT_FAILURE);
 	}
+
 	// Bind address to the socket
-	if (bind(sockfd, res->ai_addr, res->ai_addrlen) < 0) {
+	if (bind(sockfd, result->ai_addr, result->ai_addrlen) < 0) {
 		perror("bind");
 		exit(EXIT_FAILURE);
 	}
-	freeaddrinfo(res);
+	freeaddrinfo(result);
+	printf("succesfully created socket and bound address to it\n");
 
 	// Listen on socket - means we're ready to accept connections,
 	// incoming connection requests will be queued, man 3 listen
@@ -109,7 +111,7 @@ int main(int argc, char** argv) {
 	event.events = EPOLLIN;
 	// add listening socket to epoll
 	if (epoll_ctl(epollfd, EPOLL_CTL_ADD, sockfd, &event) < 0) {
-		printf("failed to add listening socket to epoll\n");
+		fprintf(stderr, "failed to add listening socket to epoll\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -142,12 +144,10 @@ int main(int argc, char** argv) {
 				// there is something to read from the socket (and it is not
 				// the listener socket)
 				message_t *message = find_message(events[i].data.fd, messages);
-				printf("message pointer: %p, message: %s, n_read: %d\n", message, message->buffer, message->n_read);
 				n = read(events[i].data.fd, &message->buffer[message->n_read], 
 						 BUFFER_SIZE - message->n_read);
 				// update n_read for this message
 				message->n_read = message->n_read + n;
-				printf("message pointer: %p, message: %s, n_read: %d\n", message, message->buffer, message->n_read);
 				if (n < 0) {
 					perror("read");
 					continue;
@@ -163,10 +163,6 @@ int main(int argc, char** argv) {
 				// Null-terminate string
 				message->buffer[message->n_read] = '\0';
 
-				// print the request
-				printf("Here is the request: %s\n", message->buffer);
-				printf("length: %ld\n", strlen(message->buffer));
-
 				// update request readiness status
 				update_message_status(message);
 
@@ -174,12 +170,10 @@ int main(int argc, char** argv) {
 				if (message->ready) {
 					// process the request
 					request = process_request(message->buffer);
-					printf("method: %d, path: %s\n", request->method, request->path);
 
 					// get the full path to the requested file
 					// (including server path)
 					file_path = get_full_path(server_path, request);
-					printf("full path to requested file: %s\n", file_path);
 
 					// get the status code for the response to the request
 					status_code = get_status_code(request, file_path);
@@ -204,10 +198,6 @@ int main(int argc, char** argv) {
 
 			}
 		}
-
-		//TODO: properly implement IPv6
-		//TODO: implement http version checking
-		//TODO: remove all perror() from after listening part (THIS FUNCTIONS EXITS THE PROGRAM!)
 		//TODO: check valgrind
 	}
 

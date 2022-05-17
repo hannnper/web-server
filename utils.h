@@ -16,6 +16,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <errno.h>
 // using sendfile because it is more efficient as it copies the files within 
 // the kernel space, so it avoids having to read the file in to user-space and 
 // then write the file back out with multiple system calls and multiple lines
