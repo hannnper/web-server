@@ -84,11 +84,18 @@ void send_status_line(int socketfd, request_t* request, char* full_path) {
     else if (status_code == TEAPOT) {
         reason = TEAPOT_STR;
     }
+
     // format the status line
-    ret = asprintf(&status_line, "%s %3.3d %s%s", HTTP_VER, status_code,
-             reason, CRLF);
+    if (request->method == BREW) {
+        ret = asprintf(&status_line, "%s %3.3d %s%s", HTCPCP, status_code,
+                reason, CRLF);
+    }
+    else {
+        ret = asprintf(&status_line, "%s %3.3d %s%s", HTTP_VER, status_code,
+                reason, CRLF);
+    }
     if (ret < 0) {
-        // error occurred during formatting
+        // error occurred during formatting or memory allocation
         perror("format");
         return;
     }
@@ -97,6 +104,7 @@ void send_status_line(int socketfd, request_t* request, char* full_path) {
         // error occurred during writing to socket
         perror("write status line");
     }
+    free(status_line);
 }
 
 
@@ -130,7 +138,7 @@ void send_mimetype(int socketfd, request_t *request) {
 
     // format the content-type header
     if (asprintf(&header, "Content-type: %s%s", mime_type, CRLF) < 0) {
-        // error occurred during formatting
+        // error occurred during formatting or memory allocation
         perror("asprintf mime type formatting");
         return;
     }
@@ -138,9 +146,8 @@ void send_mimetype(int socketfd, request_t *request) {
     if (write(socketfd, header, strlen(header)) < 0) {
         // error occurred during writing to socket
         perror("write mime type");
-        return;
     }
-
+    free(header);
 }
 
 

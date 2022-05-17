@@ -47,6 +47,7 @@ int accept_connection(int sockfd, int epollfd) {
 
     // set up epoll event
     struct epoll_event event;
+    memset(&event, 0, sizeof(event));
     event.data.fd = fd;
     event.events = EPOLLIN;
 

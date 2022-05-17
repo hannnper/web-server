@@ -107,6 +107,8 @@ int main(int argc, char** argv) {
 	// struct epoll_event: events (bit set), data (epoll_data_t: has fd)
 	struct epoll_event events[MAX_EVENTS];
 	struct epoll_event event;
+	memset(events, 0, sizeof(events));
+	memset(&event, 0, sizeof(event));
 	event.data.fd = sockfd;
 	event.events = EPOLLIN;
 	// add listening socket to epoll
@@ -118,7 +120,6 @@ int main(int argc, char** argv) {
 	while (true) {
 		// wait for epoll (-1 for no timeout)
 		event_count = epoll_wait(epollfd, events, MAX_EVENTS, -1);
-		printf("There are %d epoll events\n", event_count);
 
 		// iterate over ready events
 		for (i = 0; i < event_count; i++) {
@@ -127,7 +128,7 @@ int main(int argc, char** argv) {
 				int newfd = accept_connection(sockfd, epollfd);
 				if (newfd < 0) {
 					// failure in accept_connection
-					printf("failed to accept new connection\n");
+					fprintf(stderr, "failed to accept new connection\n");
 					continue;
 				}
 				messages = add_message(newfd, messages);
@@ -198,7 +199,6 @@ int main(int argc, char** argv) {
 
 			}
 		}
-		//TODO: check valgrind
 	}
 
 	// it won't actually get to this part
