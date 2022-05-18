@@ -71,11 +71,11 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	time_t start = time();
+	
 	printf("creating socket and binding address to it...\n");
 	// getaddrinfo() returns a linked list of address structures,
 	// trying them in the order returned
-	for (p_addr = result; p_addr != NULL; p_addr->ai_next) {
+	for (p_addr = result; p_addr != NULL; p_addr = p_addr->ai_next) {
 		// create socket
 		sockfd = socket(p_addr->ai_family, p_addr->ai_socktype, 
 						p_addr->ai_protocol);
@@ -98,7 +98,6 @@ int main(int argc, char** argv) {
 		}
 		else {
 			perror("bind");
-			fprintf(stderr, "elapsed time: %ld", time() - start);
 			continue;
 		}
 	}
