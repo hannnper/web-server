@@ -68,7 +68,6 @@ void send_status_line(int socketfd, request_t* request, char* full_path) {
     int status_code = get_status_code(request, full_path);
     int ret;
     // get reason
-    printf("Status code in send_status_line(): %d\n", status_code);
     if (status_code == OK) {
         reason = OK_STR;
     }

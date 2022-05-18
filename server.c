@@ -9,6 +9,9 @@
 //       IPv4: 172.26.130.61
 //       IPv6: fe80::f816:3eff:fe12:e19c
 
+//TODO: add loop for ip address getting
+//TODO: find how to handle root path ending in /
+
 #include "utils.h"
 #include "request.h"
 #include "response.h"
@@ -22,7 +25,7 @@ int main(int argc, char** argv) {
     int protocol, sockfd, status_code, i, s, n;
     char *port;
     char *server_path, *file_path, *protocol_string;
-    struct addrinfo hints, *result;
+    struct addrinfo hints, *result, *p_addr;
     request_t* request;
 
     // print usage information if incorrect number command line arguments given
@@ -40,7 +43,7 @@ int main(int argc, char** argv) {
     port = argv[2];
     server_path = argv[3];
 
-    printf("Initialising server with IPv%s on port %s\nwith root %s...\n",
+    printf("Initialising server with IPv%s on port %s\nwith root %s\n",
 			protocol_string, port, server_path);
 
 	// check server_path exists
@@ -68,31 +71,46 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	printf("creating socket...\n");
-	// Create socket
-	sockfd = socket(result->ai_family, result->ai_socktype, 
-					result->ai_protocol);
-
-	
-
-	// reuse port (code from project specifications)
-	int enable = 1;
-	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-		perror("setsockopt");
-		exit(EXIT_FAILURE);
-	}
-
-	// Bind address to the socket
-	if (bind(sockfd, result->ai_addr, result->ai_addrlen) < 0) {
-		perror("bind");
-		exit(EXIT_FAILURE);
+	printf("creating socket and binding address to it...\n");
+	// getaddrinfo() returns a linked list of address structures,
+	// trying them in the order returned
+	for (p_addr = result; p_addr != NULL; p_addr->ai_next) {
+		// create socket
+		sockfd = socket(p_addr->ai_family, p_addr->ai_socktype, 
+						p_addr->ai_protocol);
+		if (sockfd < 0) {
+			// error occurred in attempt to create socket
+			perror("socket");
+			continue;
+		}
+		// reuse port (code from project specifications)
+		int enable = 1;
+		if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+			perror("setsockopt");
+			// try next address with a new socket
+			continue;
+		}
+		// bind address to the socket
+		if (bind(sockfd, p_addr->ai_addr, p_addr->ai_addrlen) == 0) {
+			// successfully bound the address to the socket
+			break;
+		}
+		else {
+			perror("bind");
+			continue;
+		}
 	}
 	freeaddrinfo(result);
+	if (p_addr == NULL) {
+		// exhausted all addresses without successfully being able to create
+		// the socket and bind
+		fprintf(stderr, "unable to create socket or bind address\n");
+		exit(EXIT_FAILURE);
+	}
 	printf("succesfully created socket and bound address to it\n");
 
-	// Listen on socket - means we're ready to accept connections,
-	// incoming connection requests will be queued, man 3 listen
-	if (listen(sockfd, MAX_CONNECTIONS) < 0) {
+	// listen on socket `sockfd` with maximum `BACKLOG` connections queued
+	if (listen(sockfd, BACKLOG) < 0) {
 		perror("listen");
 		exit(EXIT_FAILURE);
 	}
