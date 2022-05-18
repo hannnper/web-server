@@ -5,7 +5,7 @@
 // Purpose: Contains the main program of server, which is a basic multiplexed
 //          HTTP server that responds to a limited set of requests
 
-// Note: server ip
+// Note: vm ip
 //       IPv4: 172.26.130.61
 //       IPv6: fe80::f816:3eff:fe12:e19c
 
@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
+	time_t start = time();
 	printf("creating socket and binding address to it...\n");
 	// getaddrinfo() returns a linked list of address structures,
 	// trying them in the order returned
@@ -97,16 +98,17 @@ int main(int argc, char** argv) {
 		}
 		else {
 			perror("bind");
+			fprintf(stderr, "elapsed time: %ld", time() - start);
 			continue;
 		}
 	}
-	freeaddrinfo(result);
 	if (p_addr == NULL) {
 		// exhausted all addresses without successfully being able to create
 		// the socket and bind
 		fprintf(stderr, "unable to create socket or bind address\n");
 		exit(EXIT_FAILURE);
 	}
+	freeaddrinfo(result);
 	printf("succesfully created socket and bound address to it\n");
 
 	// listen on socket `sockfd` with maximum `BACKLOG` connections queued
