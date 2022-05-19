@@ -19,8 +19,7 @@
 #include <errno.h>
 // using sendfile because it is more efficient as it copies the files within 
 // the kernel space, so it avoids having to read the file in to user-space and 
-// then write the file back out with multiple system calls and multiple lines
-// of code
+// then write the file back out with multiple system calls
 #include <sys/sendfile.h>
 #include <sys/stat.h>
 #include <sys/epoll.h>

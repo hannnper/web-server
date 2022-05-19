@@ -10,7 +10,7 @@
 ### Beej's Guide to Network Programming
 - https://beej.us/guide/bgnet/pdf/bgnet_a4_c_1.pdf
 
-### wikipedia
+### Wikipedia
 - https://en.wikipedia.org/wiki/Getaddrinfo
 - https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods
 - https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
@@ -24,11 +24,10 @@
 - https://www.ibm.com/docs/en/zos/2.4.0?topic=files-timeh-time-date#timeh
 - https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-getaddrinfo-get-address-information
 
-
-### MIME types 
+### MIME type 
 - https://mimetype.io/all-types
 
-### manuals
+### Manuals
 - https://man7.org/linux/man-pages/man2/stat.2.html
 - https://man7.org/linux/man-pages/man2/send.2.html
 - https://man7.org/linux/man-pages/man3/asprintf.3.html
@@ -39,6 +38,6 @@
 - https://www.gnu.org/software/libc/manual/html_node/Reading-Attributes.html
 - https://www.gnu.org/software/libc/manual/html_node/Testing-File-Access.html
 - https://man7.org/linux/man-pages/man3/getaddrinfo.3.html
-
-
+- https://man7.org/linux/man-pages/man2/bind.2.html
+- https://man7.org/linux/man-pages/man2/sendfile.2.html
 

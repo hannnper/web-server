@@ -40,4 +40,3 @@ void send_http_headers(int, request_t *);
 void send_contents(int, char *);
 
 #endif
-

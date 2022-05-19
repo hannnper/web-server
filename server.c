@@ -5,12 +5,6 @@
 // Purpose: Contains the main program of server, which is a basic multiplexed
 //          HTTP server that responds to a limited set of requests
 
-// Note: vm ip
-//       IPv4: 172.26.130.61
-//       IPv6: fe80::f816:3eff:fe12:e19c
-
-//TODO: add loop for ip address getting
-//TODO: find how to handle root path ending in /
 
 #include "utils.h"
 #include "request.h"
@@ -58,7 +52,8 @@ int main(int argc, char** argv) {
 		exit(EXIT_FAILURE);
 	}
 
-    // code source: server.c from week 9 (sockets) prac comp30023 (modified)
+    // code source for initialising getaddrinfo: 
+	// server.c from week 9 (sockets) prac comp30023 (modified)
     // create address for listening (with given port number)
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = protocol;
@@ -70,7 +65,6 @@ int main(int argc, char** argv) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
 		exit(EXIT_FAILURE);
 	}
-
 	
 	printf("creating socket and binding address to it...\n");
 	// getaddrinfo() returns a linked list of address structures,
@@ -208,6 +202,7 @@ int main(int argc, char** argv) {
 					}
 					// clean up
 					free(file_path);
+					free(request);
 					// close connection after sending response
 					epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
 					close(events[i].data.fd);
@@ -215,7 +210,6 @@ int main(int argc, char** argv) {
 					printf("disconnect socket (after sending response): %d\n", 
 							events[i].data.fd);
 				}
-
 			}
 		}
 	}

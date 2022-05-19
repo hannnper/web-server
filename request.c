@@ -132,7 +132,3 @@ char* get_full_path(char *server_path, request_t *request) {
     return full_path;
 }
 
-
-
-
-

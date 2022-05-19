@@ -40,6 +40,11 @@ int get_status_code(request_t* request, char* full_path) {
         return NOT_FOUND;
     }
 
+    // handle if filepath is not absolute (doesn't begin with '/')
+    if (request->path[0] != '/') {
+        return BAD_REQUEST;
+    }
+
     // check file exists and is regular
     ret = stat(full_path, &buf);
     if (ret != 0) {
@@ -206,13 +211,21 @@ void send_contents(int socketfd, char *path) {
 
     // using sendfile because it is more efficient as it copies the files
     // within the kernel space, so it avoids having to read the file in to 
-    // user-space and then write the file back out with multiple system calls
-    // and multiple lines of code
-    ssize_t bytes_sent;
-    bytes_sent = sendfile(socketfd, filed, NULL, buf.st_size);
-    if (bytes_sent < 0) {
-        // something went wrong when attempting to send the file contents
-        perror("sendfile");
-        return;
-    }
+    // user-space and then write the file back out with multiple system calls.
+    // Note from manual: Note that a successful call to sendfile() may write
+    // fewer bytes than requested; the caller should be prepared to retry the
+    // call if there were unsent bytes
+    ssize_t bytes_sent = 0;
+    ssize_t total_bytes_sent = 0;
+    off_t *offset = NULL;
+    do {
+        // loop until whole file contents sent or error occurs
+        bytes_sent = sendfile(socketfd, filed, offset, buf.st_size);
+        if (bytes_sent < 0) {
+            // something went wrong when attempting to send the file contents
+            perror("sendfile");
+            return;
+        }
+        total_bytes_sent = total_bytes_sent + bytes_sent;
+    } while (total_bytes_sent < buf.st_size);
 }
