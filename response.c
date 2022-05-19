@@ -9,8 +9,6 @@
 #include <errno.h>
 #include <time.h>
 #include <fcntl.h>
-#include "utils.h"
-#include "request.h"
 #include "response.h"
 
 
