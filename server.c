@@ -148,8 +148,8 @@ int main(int argc, char** argv) {
                 if (new_messages == NULL) {
                     // unsuccessful at creating new message (likely to be a
                     // malloc fail) - handle by closing connection
-                    close_connection(newfd, epollfd, NULL);
                     fprintf(stderr, "unable to allocate memory for message\n");
+                    close_connection(newfd, epollfd, NULL);
                 }
                 else {
                     // successfully added new message so replace old messages
@@ -192,6 +192,13 @@ int main(int argc, char** argv) {
                 if (message->ready) {
                     // process the request
                     request = process_request(message->buffer);
+                    if (request == NULL) {
+                        // unable to allocate memory for request - handle by
+                        // closing connection and continuing
+                        messages = close_connection(events[i].data.fd, epollfd,
+                                                messages);
+                        continue;
+                    }
 
                     // get the full path to the requested file
                     // (including server path)
