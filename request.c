@@ -5,7 +5,6 @@
 // Purpose: Contains the functions and type definitions relating to the
 //          requests to the server
 
-#include "utils.h"
 #include "request.h"
 
 #define SEPS " "  // field separator in request header
@@ -15,9 +14,14 @@
 
 // use add_message() to add an element in the messages linked list to store 
 // the incoming message from this socket, returns pointer to linked list of
-// messages
+// messages or NULL is malloc fails
 message_t* add_message(int socketfd, message_t *head) {
     message_t *new_message = malloc(sizeof(message_t));
+    if (new_message == NULL) {
+        // malloc failed, return NULL immediately. Note, this doesn't return
+        // the head of the existing list which may still contains messages
+        return NULL;
+    }
     new_message->ready = false;
     new_message->fd = socketfd;
     new_message->buffer[0] = '\0';
@@ -74,10 +78,13 @@ void update_message_status(message_t *message) {
 
 
 // process_request() takes a string request and returns a pointer to a request_t
-// containing the information for the request
+// containing the information for the request, or NULL if malloc fails
 request_t* process_request(char* req_string) {
     request_t *request = malloc(sizeof(request_t));
-    assert(request != NULL);
+    if (request == NULL) {
+        // malloc failed, return NULL
+        return NULL;
+    }
     request->method = INVALID;
     request->path[0] = '\0';
 
@@ -127,8 +134,23 @@ request_t* process_request(char* req_string) {
 char* get_full_path(char *server_path, request_t *request) {
     int total_len = strlen(server_path) + strlen(request->path);
     char *full_path = malloc(sizeof(char) * (total_len + 1));
+    if (full_path == NULL) {
+        // malloc failed, return NULL
+        return NULL;
+    }
     strcpy(full_path, server_path);
     full_path = strcat(full_path, request->path);
     return full_path;
+}
+
+
+// closes the connection: close socket, delete record from epoll and remove
+// from messages list. returns new head of messages list
+message_t *close_connection(int socketfd, int epollfd, message_t *messages) {
+    epoll_ctl(epollfd, EPOLL_CTL_DEL, socketfd, NULL);
+    close(socketfd);
+    messages = delete_message(socketfd, messages);
+    printf("disconnecting socket: %d\n", socketfd);
+    return messages;
 }
 

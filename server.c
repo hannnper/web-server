@@ -144,15 +144,25 @@ int main(int argc, char** argv) {
                     fprintf(stderr, "failed to accept new connection\n");
                     continue;
                 }
-                messages = add_message(newfd, messages);
+                message_t *new_messages = add_message(newfd, messages);
+                if (new_messages == NULL) {
+                    // unsuccessful at creating new message (likely to be a
+                    // malloc fail) - handle by closing connection
+                    close_connection(newfd, epollfd, NULL);
+                    fprintf(stderr, "unable to allocate memory for message\n");
+                }
+                else {
+                    // successfully added new message so replace old messages
+                    // list with new messages list 
+                    messages = new_messages;
+                }
             }
-            else if (events[i].events & EPOLLRDHUP || events[i].events & EPOLLHUP) {
+            else if (events[i].events & EPOLLRDHUP
+                     || events[i].events & EPOLLHUP) {
                 // connection was closed by client so deregister the fd of
                 // this socket and don't do any further reading
-                epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-                close(events[i].data.fd);
-                messages = delete_message(events[i].data.fd, messages);
-                printf("disconnect on socket: %d\n", events[i].data.fd);
+                messages = close_connection(events[i].data.fd, epollfd,
+                                             messages);
             }
             else {
                 // there is something to read from the socket (and it is not
@@ -167,11 +177,9 @@ int main(int argc, char** argv) {
                     continue;
                 }
                 else if (n == 0) {
-                    // nothing to read from socket (but there was an epoll event)
-                    epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-                    close(events[i].data.fd);
-                    messages = delete_message(events[i].data.fd, messages);
-                    printf("disconnect on socket: %d\n", events[i].data.fd);
+                    // nothing to read (but there was an epoll event)
+                    messages = close_connection(events[i].data.fd, epollfd,
+                                                messages);
                     continue;
                 }
                 // Null-terminate string
@@ -191,24 +199,21 @@ int main(int argc, char** argv) {
 
                     // get the status code for the response to the request
                     status_code = get_status_code(request, file_path);
-                    printf("status code: %d\n", status_code);
                     send_status_line(events[i].data.fd, request, file_path);
+                    printf("response status code: %d\n", status_code);
                     if (status_code == OK) {
                         // send headers and content if OK status code
                         send_http_headers(events[i].data.fd, request);
                         // send the requested file contents
                         send_contents(events[i].data.fd, file_path);
-                        
+                        printf("sent http headers and file contents\n");
                     }
                     // clean up
                     free(file_path);
                     free(request);
                     // close connection after sending response
-                    epoll_ctl(epollfd, EPOLL_CTL_DEL, events[i].data.fd, NULL);
-                    close(events[i].data.fd);
-                    messages = delete_message(events[i].data.fd, messages);
-                    printf("disconnect socket (after sending response): %d\n", 
-                            events[i].data.fd);
+                    messages = close_connection(events[i].data.fd, epollfd, 
+                                                messages);
                 }
             }
         }

@@ -42,7 +42,7 @@ int get_status_code(request_t* request, char* full_path) {
     if (request->path[0] != '/') {
         return BAD_REQUEST;
     }
-
+    
     // check file exists and is regular
     ret = stat(full_path, &buf);
     if (ret != 0) {

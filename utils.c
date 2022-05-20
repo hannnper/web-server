@@ -6,7 +6,6 @@
 
 #include "utils.h"
 
-
 // function definitions
 
 // `get_protocol()` takes a string of "4" or "6" and returns the appropriate 

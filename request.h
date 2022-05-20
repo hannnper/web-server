@@ -8,6 +8,8 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
+#include "utils.h"
+
 // constants
 #define MAX_VER_LEN 20
 // request method types
@@ -44,5 +46,6 @@ message_t* find_message(int, message_t *);
 void update_message_status(message_t *);
 request_t* process_request(char *);
 char* get_full_path(char *, request_t *);
+message_t *close_connection(int, int, message_t *);
 
 #endif
