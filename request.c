@@ -1,5 +1,5 @@
 // File:    request.c
-// Author:  Hannah Jean Perry <hperry1@student.unimelb.edu.au>
+// Author:  Han Perry
 // Subject: COMP30023 Computer Systems
 // Project: Serving the Web (project 2)
 // Purpose: Contains the functions and type definitions relating to the

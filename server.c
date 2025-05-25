@@ -1,5 +1,5 @@
 // File:    server.c
-// Author:  Hannah Jean Perry <hperry1@student.unimelb.edu.au>
+// Author:  Han Perry
 // Subject: COMP30023 Computer Systems
 // Project: Serving the Web (project 2)
 // Purpose: Contains the main program of server, which is a basic multiplexed
@@ -88,6 +88,14 @@ int main(int argc, char** argv) {
         // bind address to the socket
         if (bind(sockfd, p_addr->ai_addr, p_addr->ai_addrlen) == 0) {
             // successfully bound the address to the socket
+
+            // set listening socket to non-blocking
+            int flags = fcntl(sockfd, F_GETFL, 0);
+            if (flags < 0 || fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) < 0) {
+                perror("fcntl (non-blocking sockfd)");
+                exit(EXIT_FAILURE);
+            }
+
             break;
         }
         else {
@@ -168,13 +176,24 @@ int main(int argc, char** argv) {
                 // there is something to read from the socket (and it is not
                 // the listener socket)
                 message_t *message = find_message(events[i].data.fd, messages);
+                if (message == NULL) {
+                    fprintf(stderr, "message not found for fd %d\n", events[i].data.fd);
+                    messages = close_connection(events[i].data.fd, epollfd, messages);
+                    continue;
+                }
                 n = read(events[i].data.fd, &message->buffer[message->n_read], 
                          BUFFER_SIZE - message->n_read);
                 // update n_read for this message
                 message->n_read = message->n_read + n;
                 if (n < 0) {
-                    perror("read");
-                    continue;
+                    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                        // nothing to read right now
+                        continue;
+                    } else {
+                        perror("read");
+                        messages = close_connection(events[i].data.fd, epollfd, messages);
+                        continue;
+                    }
                 }
                 else if (n == 0) {
                     // nothing to read (but there was an epoll event)

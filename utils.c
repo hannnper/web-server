@@ -1,5 +1,5 @@
 // File:    utils.c
-// Author:  Hannah Jean Perry <hperry1@student.unimelb.edu.au>
+// Author:  Han Perry
 // Subject: COMP30023 Computer Systems
 // Project: Serving the Web (project 2)
 // Purpose: Contains the utility functions of server
@@ -44,11 +44,19 @@ int accept_connection(int sockfd, int epollfd) {
         return FAIL;
     }
 
+    // set socket to non-blocking
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+        perror("fcntl");
+        close(fd);
+        return FAIL;
+    }
+
     // set up epoll event
     struct epoll_event event;
     memset(&event, 0, sizeof(event));
     event.data.fd = fd;
-    event.events = EPOLLIN;
+    event.events = EPOLLIN | EPOLLRDHUP;
 
     // add this new file descriptor to the epoll
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event) < 0) {
